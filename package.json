@@ -1,0 +1,35 @@
+{
+  "name": "pipeline",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "Michael Hou",
+  "license": "ISC",
+  "dependencies": {
+    "browserify": "*",
+    "cloneextend": "*",
+    "ejs": "*",
+    "envify": "*",
+    "es6-promise": "^2.0.0",
+    "express": "*",
+    "flux": "*",
+    "gulp": "*",
+    "gulp-nodemon": "*",
+    "jquery": "*",
+    "react": "*",
+    "react-addons": "*",
+    "react-tools": "*",
+    "reactify": "*",
+    "require-dir": "*",
+    "uniq": "*",
+    "vinyl-buffer": "*",
+    "vinyl-source-stream": "*",
+    "watchify": "*",
+    "keymirror": "*",
+    "object-assign": "*"
+  },
+  "scripts": {
+    "watch": "watchify public/main.js -o public/main-browserify-compiled.js -v",
+    "start": "run watch & nodemon app"
+  }
+}
