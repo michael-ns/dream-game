@@ -1,11 +1,3 @@
-* {
-  text-align: center;
-}
-
-div {
-  border: 2px solid;
-}
-
 body {
   padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
@@ -17,10 +9,6 @@ a {
 
 table {
 	 width: 100%;
-}
-
-.confirm-btn {
-	display: none;
 }
 
 .visible {
@@ -37,10 +25,17 @@ table {
 
 img {
   margin: 0px 0px;
+  float: left;
 }
 
 .selected {
   border-style: solid;
   border-width: medium;
   border-color: red;
+}
+
+#champ-down-1 {
+  width: 32px;
+  height: 32px;
+  background: url(img/char-tiles.png) 0 0;
 }

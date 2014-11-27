@@ -15,10 +15,13 @@ var gameMapTiles = mapTiles;
 
 GameStore.loadGameMapTiles(gameMapTiles);
 
-//renders the game
+//renders the game basic with React
 React.renderComponent(
     GameView(), document.getElementById('board')
 );
+
+//post react rendering, characters and animation
+
 },{"./../map/level-1.json":162,"./store":160,"./view":161,"cloneextend":4,"jquery":8,"react":156}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -28620,9 +28623,21 @@ var Game = React.createClass({displayName: 'Game',
     return getGameState();
   },
 
+  onClickStartGame:function(e){
+    //insert champ image to player location
+    var playerPosition = $('.player').position();
+
+    $('.player').append("<>")
+
+    console.log("left: " + playerPosition.left + ", top: " + playerPosition.top)
+  },
+
   render:function(){
     return (
-      React.createElement("div", {className: "map"}, React.createElement(Map, {tiles: this.state.gameMap}))
+      React.createElement("div", {className: "wrapper"}, 
+        React.createElement("div", {className: "map"}, React.createElement(Map, {tiles: this.state.gameMap})), 
+        React.createElement("div", null, React.createElement("button", {className: "start-btn", onClick: this.onClickStartGame}, "Game Start"))
+      )
       )
   }
 });
@@ -28633,7 +28648,6 @@ var Map = React.createClass({displayName: 'Map',
     var row = this.props.tiles.map(function(row){
       return React.createElement(Row, {tileRow: row})
     });
-
 
     return (
       React.createElement("div", {className: "row"}, 
@@ -28664,21 +28678,19 @@ var Tiles = React.createClass({displayName: 'Tiles',
 
     switch(this.props.tile) {
       case 1:
-        mapTile = React.createElement("img", {width: "50", height: "50", src: 'img/player-tile.png'});
+        mapTile = React.createElement("img", {width: "50", height: "50", className: "player", src: 'img/player-tile.png'});
         break;
 
       case 2:
-        mapTile = React.createElement("img", {width: "50", height: "50", src: 'img/creep-tile.png'});
+        mapTile = React.createElement("img", {width: "50", height: "50", className: "creep", src: 'img/creep-tile.png'});
         break;
 
       default:
         break;
     }
 
-
-
     return (
-      React.createElement("div", {className: "col-md-1"}, 
+      React.createElement("div", null, 
         mapTile
       )
     )

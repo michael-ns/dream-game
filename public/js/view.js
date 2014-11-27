@@ -15,9 +15,21 @@ var Game = React.createClass({
     return getGameState();
   },
 
+  onClickStartGame:function(e){
+    //insert champ image to player location
+    var playerPosition = $('.player').position();
+
+    $('.player').append("<>")
+
+    console.log("left: " + playerPosition.left + ", top: " + playerPosition.top)
+  },
+
   render:function(){
     return (
-      <div className="map"><Map tiles={this.state.gameMap} /></div>
+      <div className="wrapper">
+        <div className="map"><Map tiles={this.state.gameMap} /></div>
+        <div><button className="start-btn" onClick={this.onClickStartGame}>Game Start</button></div>
+      </div>
       )
   }
 });
@@ -28,7 +40,6 @@ var Map = React.createClass({
     var row = this.props.tiles.map(function(row){
       return <Row tileRow={row} />
     });
-
 
     return (
       <div className="row">
@@ -59,21 +70,19 @@ var Tiles = React.createClass({
 
     switch(this.props.tile) {
       case 1:
-        mapTile = <img width="50" height="50" src={'img/player-tile.png'} />;
+        mapTile = <img width="50" height="50" className="player" src={'img/player-tile.png'} />;
         break;
 
       case 2:
-        mapTile = <img width="50" height="50" src={'img/creep-tile.png'} />;
+        mapTile = <img width="50" height="50" className="creep" src={'img/creep-tile.png'} />;
         break;
 
       default:
         break;
     }
 
-
-
     return (
-      <div className="col-md-1">
+      <div>
         {mapTile}
       </div>
     )

@@ -14,7 +14,9 @@ var gameMapTiles = mapTiles;
 
 GameStore.loadGameMapTiles(gameMapTiles);
 
-//renders the game
+//renders the game basic with React
 React.renderComponent(
     GameView(), document.getElementById('board')
 );
+
+//post react rendering, characters and animation
