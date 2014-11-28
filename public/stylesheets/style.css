@@ -35,7 +35,9 @@ img {
 }
 
 #champ-down-1 {
+  position: fixed;
   width: 32px;
   height: 32px;
-  background: url(img/char-tiles.png) 0 0;
+  background: url(../img/char-tiles.png) 0 0;
+  border: 0;
 }

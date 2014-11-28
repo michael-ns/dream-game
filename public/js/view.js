@@ -19,9 +19,14 @@ var Game = React.createClass({
     //insert champ image to player location
     var playerPosition = $('.player').position();
 
-    $('.player').append("<>")
+    console.log("left: " + playerPosition.left + ", top: " + playerPosition.top);
 
-    console.log("left: " + playerPosition.left + ", top: " + playerPosition.top)
+    playerPosition.left += 9;
+    playerPosition.top += 9;
+
+    var style = '"top: ' + playerPosition.top.toString() + 'px; left: ' + playerPosition.left.toString() + 'px;"';
+
+    $('#board').after('<img id="champ-down-1" style=' + style + '>');
   },
 
   render:function(){
