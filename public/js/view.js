@@ -19,8 +19,6 @@ var Game = React.createClass({
     //insert champ image to player location
     var playerPosition = $('.player').position();
 
-    console.log("left: " + playerPosition.left + ", top: " + playerPosition.top);
-
     playerPosition.left += 9;
     playerPosition.top += 9;
 
@@ -29,9 +27,21 @@ var Game = React.createClass({
     $('#board').after('<img id="champ-down-1" style=' + style + '>');
   },
 
+  handleKey:function(e){
+    var keyCode = e.which;
+
+    //if any of the move key was pressed
+    if (keyCode == 119 ||
+        keyCode == 115 ||
+        keyCode == 97 ||
+        keyCode == 100) {
+      GameStore.moveChamp(keyCode);
+    }
+  },
+
   render:function(){
     return (
-      <div className="wrapper">
+      <div className="wrapper" onKeyPress={this.handleKey}>
         <div className="map"><Map tiles={this.state.gameMap} /></div>
         <div><button className="start-btn" onClick={this.onClickStartGame}>Game Start</button></div>
       </div>

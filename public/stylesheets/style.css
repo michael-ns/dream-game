@@ -15,14 +15,6 @@ table {
   cursor: pointer;
 }
 
-.opponent-state .player-state {
-  height: 50px;
-}
-
-.opponent-cards .battle-field .player-cards {
-  height: 150px;
-}
-
 img {
   margin: 0px 0px;
   float: left;

@@ -28498,6 +28498,8 @@ module.exports = GameActions;
 var keyMirror = require('keymirror');
 
 module.exports = keyMirror({
+  TILE_WIDTH: 50,
+  CHAR_WIDTH: 32,
   CARD_SELECT: null,
   ONCLICK_CONFIRM: null,
   ONCLICK_START_GAME: null
@@ -28549,6 +28551,43 @@ var GameStore = assign({}, EventEmitter.prototype, {
 
   getGameMap: function() {
     return _mapTiles;
+  },
+
+  moveChamp: function(keyCode) {
+    var moveVector = [0, 0];
+
+    switch(keyCode) {
+
+      //move up
+      case 119:
+        moveVector = [0, -50];
+        break;
+
+      //move down
+      case 115:
+        moveVector = [0, 50];
+        break;
+
+      //move left
+      case 97:
+        moveVector = [-50, 0];
+        break;
+
+      //move right
+      case 100:
+        moveVector = [50, 0];
+        break;
+
+      default:
+        break;
+    }
+
+    //actually move our champ
+    $('#champ-down-1').animate({
+      left : "+=" + moveVector[0].toString(),
+      top: "+=" + moveVector[1].toString()
+    })
+
   },
 
   //not specific to this game
@@ -28627,8 +28666,6 @@ var Game = React.createClass({displayName: 'Game',
     //insert champ image to player location
     var playerPosition = $('.player').position();
 
-    console.log("left: " + playerPosition.left + ", top: " + playerPosition.top);
-
     playerPosition.left += 9;
     playerPosition.top += 9;
 
@@ -28637,9 +28674,21 @@ var Game = React.createClass({displayName: 'Game',
     $('#board').after('<img id="champ-down-1" style=' + style + '>');
   },
 
+  handleKey:function(e){
+    var keyCode = e.which;
+
+    //if any of the move key was pressed
+    if (keyCode == 119 ||
+        keyCode == 115 ||
+        keyCode == 97 ||
+        keyCode == 100) {
+      GameStore.moveChamp(keyCode);
+    }
+  },
+
   render:function(){
     return (
-      React.createElement("div", {className: "wrapper"}, 
+      React.createElement("div", {className: "wrapper", onKeyPress: this.handleKey}, 
         React.createElement("div", {className: "map"}, React.createElement(Map, {tiles: this.state.gameMap})), 
         React.createElement("div", null, React.createElement("button", {className: "start-btn", onClick: this.onClickStartGame}, "Game Start"))
       )

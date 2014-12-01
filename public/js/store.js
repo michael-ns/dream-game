@@ -18,6 +18,43 @@ var GameStore = assign({}, EventEmitter.prototype, {
     return _mapTiles;
   },
 
+  moveChamp: function(keyCode) {
+    var moveVector = [0, 0];
+
+    switch(keyCode) {
+
+      //move up
+      case 119:
+        moveVector = [0, -50];
+        break;
+
+      //move down
+      case 115:
+        moveVector = [0, 50];
+        break;
+
+      //move left
+      case 97:
+        moveVector = [-50, 0];
+        break;
+
+      //move right
+      case 100:
+        moveVector = [50, 0];
+        break;
+
+      default:
+        break;
+    }
+
+    //actually move our champ
+    $('#champ-down-1').animate({
+      left : "+=" + moveVector[0].toString(),
+      top: "+=" + moveVector[1].toString()
+    })
+
+  },
+
   //not specific to this game
   emitChange: function() {
     this.emit(CHANGE_EVENT);
