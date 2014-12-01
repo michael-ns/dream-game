@@ -28542,11 +28542,42 @@ var $ = require('jquery');
 var CHANGE_EVENT = 'change';
 
 var _mapTiles = null;
+var _champPosition = [0, 0];
+
+function upDateChampinTiles(direction) {
+
+  _mapTiles[_champPosition[1]][_champPosition[0]] = 0;
+
+  switch(direction) {
+    case "up":
+      if(_champPosition[1] != 0) _champPosition[1] -= 1;
+      break;
+
+    case "down":
+      if(_champPosition[1] != 8) _champPosition[1] += 1;
+      break;
+
+    case "left":
+      if(_champPosition[0] != 0) _champPosition[0] -= 1;
+      break;
+
+    case "right":
+      if(_champPosition[0] != 8) _champPosition[0] += 1;
+      break;
+
+    default:
+      break;
+  }
+
+  _mapTiles[_champPosition[1]][_champPosition[0]] = 1;
+
+}
 
 var GameStore = assign({}, EventEmitter.prototype, {
 
   loadGameMapTiles: function(mapTiles) {
     _mapTiles = mapTiles.tiles;
+    _champPosition = mapTiles.champLocation;
   },
 
   getGameMap: function() {
@@ -28555,26 +28586,31 @@ var GameStore = assign({}, EventEmitter.prototype, {
 
   moveChamp: function(keyCode) {
     var moveVector = [0, 0];
+    var direction = "";
 
     switch(keyCode) {
 
       //move up
       case 119:
+        direction = "up";
         moveVector = [0, -50];
         break;
 
       //move down
       case 115:
+        direction = "down";
         moveVector = [0, 50];
         break;
 
       //move left
       case 97:
+        direction = "left";
         moveVector = [-50, 0];
         break;
 
       //move right
       case 100:
+        direction = "right";
         moveVector = [50, 0];
         break;
 
@@ -28588,6 +28624,8 @@ var GameStore = assign({}, EventEmitter.prototype, {
       top: "+=" + moveVector[1].toString()
     })
 
+    //update champ position in tiles map
+    upDateChampinTiles(direction);
   },
 
   //not specific to this game
@@ -28684,6 +28722,8 @@ var Game = React.createClass({displayName: 'Game',
         keyCode == 100) {
       GameStore.moveChamp(keyCode);
     }
+
+    this.forceUpdate();
   },
 
   render:function(){
@@ -28763,6 +28803,8 @@ module.exports={
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0]
-  ]
+  ],
+  "champLocation": [1, 0],
+  "creepsLocations": [[2, 3, 1]]
 }
 },{}]},{},[1]);

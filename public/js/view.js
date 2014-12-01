@@ -37,6 +37,8 @@ var Game = React.createClass({
         keyCode == 100) {
       GameStore.moveChamp(keyCode);
     }
+
+    this.forceUpdate();
   },
 
   render:function(){
