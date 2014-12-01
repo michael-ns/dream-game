@@ -10,6 +10,8 @@ var _mapTiles = null;
 var _champPosition = [0, 0];
 var _animationCounter = 0;
 var _champFaceDirection = "down";
+var _tileWidth = 50;
+var _charWidth = 32;
 
 function updateChampinTiles() {
 
@@ -49,6 +51,16 @@ var GameStore = assign({}, EventEmitter.prototype, {
 
   getGameMap: function() {
     return _mapTiles;
+  },
+
+  getChampPosition: function() {
+    var champPositionInPixel = [0, 0];
+    var champTilePosition = $('.player').position();
+
+    champPositionInPixel[0] = champTilePosition.left + ((_tileWidth - _charWidth) * 0.5);
+    champPositionInPixel[1] = champTilePosition.top + ((_tileWidth - _charWidth) * 0.5);
+
+    return champPositionInPixel;
   },
 
   startChampAnimationLoop: function() {

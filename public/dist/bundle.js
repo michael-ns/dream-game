@@ -28498,8 +28498,6 @@ module.exports = GameActions;
 var keyMirror = require('keymirror');
 
 module.exports = keyMirror({
-  TILE_WIDTH: 50,
-  CHAR_WIDTH: 32,
   CARD_SELECT: null,
   ONCLICK_CONFIRM: null,
   ONCLICK_START_GAME: null
@@ -28545,6 +28543,8 @@ var _mapTiles = null;
 var _champPosition = [0, 0];
 var _animationCounter = 0;
 var _champFaceDirection = "down";
+var _tileWidth = 50;
+var _charWidth = 32;
 
 function updateChampinTiles() {
 
@@ -28584,6 +28584,16 @@ var GameStore = assign({}, EventEmitter.prototype, {
 
   getGameMap: function() {
     return _mapTiles;
+  },
+
+  getChampPosition: function() {
+    var champPositionInPixel = [0, 0];
+    var champTilePosition = $('.player').position();
+
+    champPositionInPixel[0] = champTilePosition.left + ((_tileWidth - _charWidth) * 0.5);
+    champPositionInPixel[1] = champTilePosition.top + ((_tileWidth - _charWidth) * 0.5);
+
+    return champPositionInPixel;
   },
 
   startChampAnimationLoop: function() {
@@ -28715,17 +28725,17 @@ var Game = React.createClass({displayName: 'Game',
   },
 
   onClickStartGame:function(e){
-    //insert champ image to player location
-    var playerPosition = $('.player').position();
 
-    playerPosition.left += 9;
-    playerPosition.top += 9;
+    var champPosition = GameStore.getChampPosition();
 
-    var style = '"top: ' + playerPosition.top.toString() + 'px; left: ' + playerPosition.left.toString() + 'px;"';
+    var champStyle = '"top: ' + champPosition[1].toString() + 'px; left: ' + champPosition[0].toString() + 'px;"';
 
-    $('#board').after('<img class="champ" id="champ-down-0" style=' + style + '>');
+    console.log(champPosition)
+
+    $('#board').after('<img class="champ" id="champ-down-0" style=' + champStyle + '>');
 
     GameStore.startChampAnimationLoop();
+    //GameStore.startCreepsAnimationLoop();
   },
 
   handleKey:function(e){

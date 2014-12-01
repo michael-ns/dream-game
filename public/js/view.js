@@ -16,17 +16,17 @@ var Game = React.createClass({
   },
 
   onClickStartGame:function(e){
-    //insert champ image to player location
-    var playerPosition = $('.player').position();
 
-    playerPosition.left += 9;
-    playerPosition.top += 9;
+    var champPosition = GameStore.getChampPosition();
 
-    var style = '"top: ' + playerPosition.top.toString() + 'px; left: ' + playerPosition.left.toString() + 'px;"';
+    var champStyle = '"top: ' + champPosition[1].toString() + 'px; left: ' + champPosition[0].toString() + 'px;"';
 
-    $('#board').after('<img class="champ" id="champ-down-0" style=' + style + '>');
+    console.log(champPosition)
+
+    $('#board').after('<img class="champ" id="champ-down-0" style=' + champStyle + '>');
 
     GameStore.startChampAnimationLoop();
+    //GameStore.startCreepsAnimationLoop();
   },
 
   handleKey:function(e){
