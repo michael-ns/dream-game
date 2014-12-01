@@ -15,23 +15,27 @@ var _charWidth = 32;
 
 function updateChampinTiles() {
 
-  _mapTiles[_champPosition[1]][_champPosition[0]] = 0;
+  var canMoveto = false;
 
   switch(_champFaceDirection) {
     case "up":
-      if(_champPosition[1] != 0) _champPosition[1] -= 1;
+      _mapTiles[_champPosition[1]][_champPosition[0]] = 0;
+      _champPosition[1] -= 1;
       break;
 
     case "down":
-      if(_champPosition[1] != 8) _champPosition[1] += 1;
+      _mapTiles[_champPosition[1]][_champPosition[0]] = 0;
+      _champPosition[1] += 1;
       break;
 
     case "left":
-      if(_champPosition[0] != 0) _champPosition[0] -= 1;
+      _mapTiles[_champPosition[1]][_champPosition[0]] = 0;
+      _champPosition[0] -= 1;
       break;
 
     case "right":
-      if(_champPosition[0] != 8) _champPosition[0] += 1;
+      _mapTiles[_champPosition[1]][_champPosition[0]] = 0;
+      _champPosition[0] += 1;
       break;
 
     default:
@@ -40,6 +44,56 @@ function updateChampinTiles() {
 
   _mapTiles[_champPosition[1]][_champPosition[0]] = 1;
 
+}
+
+function canMoveTo() {
+  var canMove = false;
+
+  switch(_champFaceDirection) {
+    case "up":
+      if(_champPosition[1] != 0) canMove = true;
+      break;
+
+    case "down":
+      if(_champPosition[1] != 7) canMove = true;
+      break;
+
+    case "left":
+      if(_champPosition[0] != 0) canMove = true;
+      break;
+
+    case "right":
+      if(_champPosition[0] != 7) canMove = true;
+      break;
+
+    default:
+      break;
+  }
+
+  return canMove;
+}
+
+function setChampFaceDirection(keyCode) {
+  switch(keyCode) {
+    case 119:
+      _champFaceDirection = "up";
+      break;
+
+    case 115:
+      _champFaceDirection = "down";
+      break;
+
+    case 97:
+      _champFaceDirection = "left";
+      break;
+
+    case 100:
+      _champFaceDirection = "right";
+      break;
+
+    default:
+      break;
+  }
 }
 
 var GameStore = assign({}, EventEmitter.prototype, {
@@ -74,49 +128,41 @@ var GameStore = assign({}, EventEmitter.prototype, {
   },
 
   moveChamp: function(keyCode) {
-    var moveVector = [0, 0];
+    setChampFaceDirection(keyCode);
 
-    switch(keyCode) {
+    if (canMoveTo()) {
+      var moveVector = [0, 0];
 
-      //move up
-      case 119:
-        _champFaceDirection = "up";
-        moveVector = [0, -50];
-        break;
+      switch(_champFaceDirection) {
+        case "up":
+          moveVector[1] -= 1;
+          break;
 
-      //move down
-      case 115:
-        _champFaceDirection = "down";
-        moveVector = [0, 50];
-        break;
+        case "down":
+          moveVector[1] += 1;
+          break;
 
-      //move left
-      case 97:
-        _champFaceDirection = "left";
-        moveVector = [-50, 0];
-        break;
+        case "left":
+          moveVector[0] -= 1;
+          break;
 
-      //move right
-      case 100:
-        _champFaceDirection = "right";
-        moveVector = [50, 0];
-        break;
+        case "right":
+          moveVector[0] += 1;
+          break;
 
-      default:
-        break;
+        default:
+          break;
+      }
+
+      //actually move our champ
+      $('.champ').animate({
+        left : "+=" + (moveVector[0] * _tileWidth).toString(),
+        top: "+=" + (moveVector[1] * _tileWidth).toString()
+      }, 1000);
+
+      //update champ position in tiles map
+      updateChampinTiles();
     }
-
-    //update the champ image
-    $('.champ').attr("id", "champ-" + _champFaceDirection + "-0");
-
-    //actually move our champ
-    $('.champ').animate({
-      left : "+=" + moveVector[0].toString(),
-      top: "+=" + moveVector[1].toString()
-    }, 1000)
-
-    //update champ position in tiles map
-    updateChampinTiles();
   },
 
   //not specific to this game
