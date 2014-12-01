@@ -28543,12 +28543,14 @@ var CHANGE_EVENT = 'change';
 
 var _mapTiles = null;
 var _champPosition = [0, 0];
+var _animationCounter = 0;
+var _champFaceDirection = "down";
 
-function upDateChampinTiles(direction) {
+function updateChampinTiles() {
 
   _mapTiles[_champPosition[1]][_champPosition[0]] = 0;
 
-  switch(direction) {
+  switch(_champFaceDirection) {
     case "up":
       if(_champPosition[1] != 0) _champPosition[1] -= 1;
       break;
@@ -28584,33 +28586,42 @@ var GameStore = assign({}, EventEmitter.prototype, {
     return _mapTiles;
   },
 
+  startChampAnimationLoop: function() {
+    setInterval(function () {
+      if (_animationCounter == 3) _animationCounter = 0;
+
+      $('.champ').attr("id", "champ-" + _champFaceDirection + "-" + _animationCounter.toString());
+
+      _animationCounter += 1;
+    }, 250);
+  },
+
   moveChamp: function(keyCode) {
     var moveVector = [0, 0];
-    var direction = "";
 
     switch(keyCode) {
 
       //move up
       case 119:
-        direction = "up";
+        _champFaceDirection = "up";
         moveVector = [0, -50];
         break;
 
       //move down
       case 115:
-        direction = "down";
+        _champFaceDirection = "down";
         moveVector = [0, 50];
         break;
 
       //move left
       case 97:
-        direction = "left";
+        _champFaceDirection = "left";
         moveVector = [-50, 0];
         break;
 
       //move right
       case 100:
-        direction = "right";
+        _champFaceDirection = "right";
         moveVector = [50, 0];
         break;
 
@@ -28618,14 +28629,17 @@ var GameStore = assign({}, EventEmitter.prototype, {
         break;
     }
 
+    //update the champ image
+    $('.champ').attr("id", "champ-" + _champFaceDirection + "-0");
+
     //actually move our champ
-    $('#champ-down-1').animate({
+    $('.champ').animate({
       left : "+=" + moveVector[0].toString(),
       top: "+=" + moveVector[1].toString()
-    })
+    }, 1000)
 
     //update champ position in tiles map
-    upDateChampinTiles(direction);
+    updateChampinTiles();
   },
 
   //not specific to this game
@@ -28709,7 +28723,9 @@ var Game = React.createClass({displayName: 'Game',
 
     var style = '"top: ' + playerPosition.top.toString() + 'px; left: ' + playerPosition.left.toString() + 'px;"';
 
-    $('#board').after('<img id="champ-down-1" style=' + style + '>');
+    $('#board').after('<img class="champ" id="champ-down-0" style=' + style + '>');
+
+    GameStore.startChampAnimationLoop();
   },
 
   handleKey:function(e){

@@ -26,10 +26,98 @@ img {
   border-color: red;
 }
 
-#champ-down-1 {
+#champ-down-0 {
   position: fixed;
   width: 32px;
   height: 32px;
   background: url(../img/char-tiles.png) 0 0;
+  border: 0;
+}
+
+#champ-up-0 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) 0 -96px;
+  border: 0;
+}
+
+#champ-left-0 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) 0 -32px;
+  border: 0;
+}
+
+#champ-right-0 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) 0 -64px;
+  border: 0;
+}
+
+#champ-down-1 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -32px 0;
+  border: 0;
+}
+
+#champ-up-1 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -32px -96px;
+  border: 0;
+}
+
+#champ-left-1 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -32px -32px;
+  border: 0;
+}
+
+#champ-right-1 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -32px -64px;
+  border: 0;
+}
+
+#champ-down-2 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -64px 0;
+  border: 0;
+}
+
+#champ-up-2 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -64px -96px;
+  border: 0;
+}
+
+#champ-left-2 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -64px -32px;
+  border: 0;
+}
+
+#champ-right-2 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -64px -64px;
   border: 0;
 }

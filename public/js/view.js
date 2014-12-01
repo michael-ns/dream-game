@@ -24,7 +24,9 @@ var Game = React.createClass({
 
     var style = '"top: ' + playerPosition.top.toString() + 'px; left: ' + playerPosition.left.toString() + 'px;"';
 
-    $('#board').after('<img id="champ-down-1" style=' + style + '>');
+    $('#board').after('<img class="champ" id="champ-down-0" style=' + style + '>');
+
+    GameStore.startChampAnimationLoop();
   },
 
   handleKey:function(e){
