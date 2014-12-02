@@ -121,3 +121,27 @@ img {
   background: url(../img/char-tiles.png) -64px -64px;
   border: 0;
 }
+
+#creep-down-0 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -96px 0;
+  border: 0;
+}
+
+#creep-down-1 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -128px 0;
+  border: 0;
+}
+
+#creep-down-2 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -160px 0;
+  border: 0;
+}

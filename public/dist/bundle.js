@@ -28541,6 +28541,7 @@ var CHANGE_EVENT = 'change';
 
 var _mapTiles = null;
 var _champPosition = [0, 0];
+var _creepPosition = [0, 0];
 var _animationCounter = 0;
 var _champFaceDirection = "down";
 var _tileWidth = 50;
@@ -28629,35 +28630,81 @@ function setChampFaceDirection(keyCode) {
   }
 }
 
+function getChampPosition() {
+  var champPositionInPixel = [0, 0];
+  var champTilePosition = $('.player').position();
+
+  champPositionInPixel[0] = champTilePosition.left + ((_tileWidth - _charWidth) * 0.5);
+  champPositionInPixel[1] = champTilePosition.top + ((_tileWidth - _charWidth) * 0.5);
+
+  return champPositionInPixel;
+}
+
+function getCreepPosition() {
+  var creepPositionInPixel = [0, 0];
+  var creepTilePosition = $('.creep').position();
+
+  console.log(creepTilePosition)
+
+  creepPositionInPixel[0] = creepTilePosition.left + ((_tileWidth - _charWidth) * 0.5);
+  creepPositionInPixel[1] = creepTilePosition.top + ((_tileWidth - _charWidth) * 0.5);
+
+  console.log(creepPositionInPixel)
+
+  return creepPositionInPixel;
+}
+
+function startChampAnimationLoop() {
+  setInterval(function () {
+    if (_animationCounter == 3) _animationCounter = 0;
+
+    $('.champ-spirit').attr("id", "champ-" + _champFaceDirection + "-" + _animationCounter.toString());
+
+    _animationCounter += 1;
+  }, 250);
+}
+
+function startCreepAnimationLoop() {
+  setInterval(function () {
+    if (_animationCounter == 3) _animationCounter = 0;
+
+    $('.creep-spirit').attr("id", "creep-down-" + _animationCounter.toString());
+
+    _animationCounter += 1;
+  }, 250);
+}
+
 var GameStore = assign({}, EventEmitter.prototype, {
+
+  renderGameObjects: function() {
+
+    //render the champ
+    var champPosition = getChampPosition();
+
+    var champStyle = '"top: ' + champPosition[1].toString() + 'px; left: ' + champPosition[0].toString() + 'px;"';
+
+    $('#board').after('<img class="champ-spirit" id="champ-down-0" style=' + champStyle + '>');
+
+    startChampAnimationLoop();
+
+    //render creeps
+    var creepPosition = getCreepPosition();
+
+    var creepStyle = '"top: ' + creepPosition[1].toString() + 'px; left: ' + creepPosition[0].toString() + 'px;"';
+
+    $('#board').after('<img class="creep-spirit" id="creep-down-0" style=' + creepStyle + '>');
+    
+    startCreepAnimationLoop();
+  },
 
   loadGameMapTiles: function(mapTiles) {
     _mapTiles = mapTiles.tiles;
     _champPosition = mapTiles.champLocation;
+    _creepPosition = mapTiles.creepPosition;
   },
 
   getGameMap: function() {
     return _mapTiles;
-  },
-
-  getChampPosition: function() {
-    var champPositionInPixel = [0, 0];
-    var champTilePosition = $('.player').position();
-
-    champPositionInPixel[0] = champTilePosition.left + ((_tileWidth - _charWidth) * 0.5);
-    champPositionInPixel[1] = champTilePosition.top + ((_tileWidth - _charWidth) * 0.5);
-
-    return champPositionInPixel;
-  },
-
-  startChampAnimationLoop: function() {
-    setInterval(function () {
-      if (_animationCounter == 3) _animationCounter = 0;
-
-      $('.champ').attr("id", "champ-" + _champFaceDirection + "-" + _animationCounter.toString());
-
-      _animationCounter += 1;
-    }, 250);
   },
 
   moveChamp: function(keyCode) {
@@ -28688,7 +28735,7 @@ var GameStore = assign({}, EventEmitter.prototype, {
       }
 
       //actually move our champ
-      $('.champ').animate({
+      $('.champ-spirit').animate({
         left : "+=" + (moveVector[0] * _tileWidth).toString(),
         top: "+=" + (moveVector[1] * _tileWidth).toString()
       }, 1000);
@@ -28772,16 +28819,8 @@ var Game = React.createClass({displayName: 'Game',
 
   onClickStartGame:function(e){
 
-    var champPosition = GameStore.getChampPosition();
+    GameStore.renderGameObjects();
 
-    var champStyle = '"top: ' + champPosition[1].toString() + 'px; left: ' + champPosition[0].toString() + 'px;"';
-
-    console.log(champPosition)
-
-    $('#board').after('<img class="champ" id="champ-down-0" style=' + champStyle + '>');
-
-    GameStore.startChampAnimationLoop();
-    //GameStore.startCreepsAnimationLoop();
   },
 
   handleKey:function(e){
@@ -28877,6 +28916,6 @@ module.exports={
     [0, 0, 0, 0, 0, 0, 0, 0]
   ],
   "champLocation": [1, 0],
-  "creepsLocations": [[2, 3, 1]]
+  "creepsLocationCollection": [3, 1]
 }
 },{}]},{},[1]);

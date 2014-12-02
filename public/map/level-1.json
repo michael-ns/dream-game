@@ -10,5 +10,5 @@
     [0, 0, 0, 0, 0, 0, 0, 0]
   ],
   "champLocation": [1, 0],
-  "creepsLocations": [[2, 3, 1]]
+  "creepsLocationCollection": [3, 1]
 }

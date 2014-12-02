@@ -17,16 +17,8 @@ var Game = React.createClass({
 
   onClickStartGame:function(e){
 
-    var champPosition = GameStore.getChampPosition();
+    GameStore.renderGameObjects();
 
-    var champStyle = '"top: ' + champPosition[1].toString() + 'px; left: ' + champPosition[0].toString() + 'px;"';
-
-    console.log(champPosition)
-
-    $('#board').after('<img class="champ" id="champ-down-0" style=' + champStyle + '>');
-
-    GameStore.startChampAnimationLoop();
-    //GameStore.startCreepsAnimationLoop();
   },
 
   handleKey:function(e){
