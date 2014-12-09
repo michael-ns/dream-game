@@ -1,22 +1,54 @@
+var React = require('react');
 var ce = require('cloneextend');
 var $ = require('jquery');
-var GameView = require('./view');
-var React = require('react');
-var GameStore = require('./store');
 
-//Map = require('./../../model/map');
-//champ = require('./../../model/champ');
-//Creep = require('./../../model/creep');
-mapTiles = require('./../map/level-1.json');
+var MapActionCreators = require('./actions/mapActionCreators');
+var DashboardActionCreators = require('./actions/dashboardActionCreators');
+var ChampActionCreators = require('./actions/champActionCreators');
+var CreepActionCreators = require('./actions/creepActionCreators');
 
-//load map from json
-var gameMapTiles = mapTiles;
+var Map = require('./components/map');
+var Dashboard = require('./components/dashboard');
+var Champ = require('./components/champ');
+var Creep = require('./components/creep');
 
-GameStore.loadGameMapTiles(gameMapTiles);
+var ChampStore = require('./stores/champStore');
 
-//renders the game basic with React
+var Game = React.createClass({
+  onKeyPress: function(e) {
+    var keyCode = e.which;
+
+    if (keyCode == 119 ||
+        keyCode == 115 ||
+        keyCode == 97 ||
+        keyCode == 100) {
+      ChampActionCreators.moveChamp(keyCode);
+    }
+  },
+
+  onClickStartGame: function(e) {
+    React.renderComponent(
+      Champ(), document.getElementById('champ')
+      //Creep(), document.getElementById('creep')
+    );
+
+    ChampStore.startChampAnimationLoop();
+  },
+
+  render: function() {
+    return (
+      <div className="game-wrapper" onKeyPress={this.onKeyPress}>
+        <div className="map"><Map /></div>
+        <div><button className="start-btn" onClick={this.onClickStartGame}>Game Start</button></div>
+        <div id="champ"></div>
+        <div id="creep"></div>
+      </div>
+    )
+  }
+});
+
+module.exports = Game;
+
 React.renderComponent(
-    GameView(), document.getElementById('board')
+  Game(), document.getElementById('board')
 );
-
-//post react rendering, characters and animation

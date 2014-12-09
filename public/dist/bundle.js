@@ -1,28 +1,59 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var React = require('react');
 var ce = require('cloneextend');
 var $ = require('jquery');
-var GameView = require('./view');
-var React = require('react');
-var GameStore = require('./store');
 
-//Map = require('./../../model/map');
-//champ = require('./../../model/champ');
-//Creep = require('./../../model/creep');
-mapTiles = require('./../map/level-1.json');
+var MapActionCreators = require('./actions/mapActionCreators');
+var DashboardActionCreators = require('./actions/dashboardActionCreators');
+var ChampActionCreators = require('./actions/champActionCreators');
+var CreepActionCreators = require('./actions/creepActionCreators');
 
-//load map from json
-var gameMapTiles = mapTiles;
+var Map = require('./components/map');
+var Dashboard = require('./components/dashboard');
+var Champ = require('./components/champ');
+var Creep = require('./components/creep');
 
-GameStore.loadGameMapTiles(gameMapTiles);
+var ChampStore = require('./stores/champStore');
 
-//renders the game basic with React
+var Game = React.createClass({displayName: 'Game',
+  onKeyPress: function(e) {
+    var keyCode = e.which;
+
+    if (keyCode == 119 ||
+        keyCode == 115 ||
+        keyCode == 97 ||
+        keyCode == 100) {
+      ChampActionCreators.moveChamp(keyCode);
+    }
+  },
+
+  onClickStartGame: function(e) {
+    React.renderComponent(
+      Champ(), document.getElementById('champ')
+      //Creep(), document.getElementById('creep')
+    );
+
+    ChampStore.startChampAnimationLoop();
+  },
+
+  render: function() {
+    return (
+      React.createElement("div", {className: "game-wrapper", onKeyPress: this.onKeyPress}, 
+        React.createElement("div", {className: "map"}, React.createElement(Map, null)), 
+        React.createElement("div", null, React.createElement("button", {className: "start-btn", onClick: this.onClickStartGame}, "Game Start")), 
+        React.createElement("div", {id: "champ"}), 
+        React.createElement("div", {id: "creep"})
+      )
+    )
+  }
+});
+
+module.exports = Game;
+
 React.renderComponent(
-    GameView(), document.getElementById('board')
+  Game(), document.getElementById('board')
 );
-
-//post react rendering, characters and animation
-
-},{"./../map/level-1.json":162,"./store":160,"./view":161,"cloneextend":4,"jquery":8,"react":156}],2:[function(require,module,exports){
+},{"./actions/champActionCreators":157,"./actions/creepActionCreators":158,"./actions/dashboardActionCreators":159,"./actions/mapActionCreators":160,"./components/champ":161,"./components/creep":162,"./components/dashboard":163,"./components/map":164,"./stores/champStore":167,"cloneextend":4,"jquery":8,"react":156}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -28464,403 +28495,48 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":38}],157:[function(require,module,exports){
-var GameDispatcher = require('./dispatcher');
-var GameConstants = require('./constants');
 
-var GameActions = {
-
-  /**
-  * Handle select when player clicks on a card
-  */
-  onClickSelect: function(cardID) {
-    GameDispatcher.handleViewAction({
-      actionType: GameConstants.CARD_SELECT,
-      id: cardID
-    });
-  },
-
-  onClickStartGame: function() {
-    GameDispatcher.handleViewAction({
-      actionType: GameConstants.ONCLICK_START_GAME
-    });
-  },
-
-  onClickConfirm: function() {
-    GameDispatcher.handleViewAction({
-      actionType: GameConstants.ONCLICK_CONFIRM
-    });
-  }
-};
-
-module.exports = GameActions;
-
-},{"./constants":158,"./dispatcher":159}],158:[function(require,module,exports){
-var keyMirror = require('keymirror');
-
-module.exports = keyMirror({
-  CARD_SELECT: null,
-  ONCLICK_CONFIRM: null,
-  ONCLICK_START_GAME: null
-});
-
-},{"keymirror":9}],159:[function(require,module,exports){
-/* AppDispatcher
- *
- * A singleton that operates as the central hub for application updates.
- */
-
-var Dispatcher = require('flux').Dispatcher;
-var assign = require('object-assign');
-
-var GameDispatcher = assign(new Dispatcher(), {
-
-  /**
-   * A bridge function between the views and the dispatcher, marking the action
-   * as a view action.  Another variant here could be handleServerAction.
-   * @param  {object} action The data coming from the view.
-   */
-  handleViewAction: function(action) {
-    this.dispatch({
-      source: 'VIEW_ACTION',
-      action: action
-    });
-  }
-
-});
-
-module.exports = GameDispatcher;
-
-},{"flux":5,"object-assign":10}],160:[function(require,module,exports){
-var GameDispatcher = require('./dispatcher');
-var EventEmitter = require('events').EventEmitter;
-var GameConstants = require('./constants');
-var assign = require('object-assign');
-var $ = require('jquery');
-
-var CHANGE_EVENT = 'change';
-
-var _mapTiles = null;
-var _champPosition = [0, 0];
-var _creepPosition = [0, 0];
-var _animationCounter = 0;
-var _champFaceDirection = "down";
-var _tileWidth = 50;
-var _charWidth = 32;
-
-function updateChampinTiles() {
-
-  var canMoveto = false;
-
-  switch(_champFaceDirection) {
-    case "up":
-      _mapTiles[_champPosition[1]][_champPosition[0]] = 0;
-      _champPosition[1] -= 1;
-      break;
-
-    case "down":
-      _mapTiles[_champPosition[1]][_champPosition[0]] = 0;
-      _champPosition[1] += 1;
-      break;
-
-    case "left":
-      _mapTiles[_champPosition[1]][_champPosition[0]] = 0;
-      _champPosition[0] -= 1;
-      break;
-
-    case "right":
-      _mapTiles[_champPosition[1]][_champPosition[0]] = 0;
-      _champPosition[0] += 1;
-      break;
-
-    default:
-      break;
-  }
-
-  _mapTiles[_champPosition[1]][_champPosition[0]] = 1;
-
-}
-
-function canMoveTo() {
-  var canMove = false;
-
-  switch(_champFaceDirection) {
-    case "up":
-      if(_champPosition[1] != 0) canMove = true;
-      break;
-
-    case "down":
-      if(_champPosition[1] != 7) canMove = true;
-      break;
-
-    case "left":
-      if(_champPosition[0] != 0) canMove = true;
-      break;
-
-    case "right":
-      if(_champPosition[0] != 7) canMove = true;
-      break;
-
-    default:
-      break;
-  }
-
-  return canMove;
-}
-
-function setChampFaceDirection(keyCode) {
-  switch(keyCode) {
-    case 119:
-      _champFaceDirection = "up";
-      break;
-
-    case 115:
-      _champFaceDirection = "down";
-      break;
-
-    case 97:
-      _champFaceDirection = "left";
-      break;
-
-    case 100:
-      _champFaceDirection = "right";
-      break;
-
-    default:
-      break;
-  }
-}
-
-function getChampPosition() {
-  var champPositionInPixel = [0, 0];
-  var champTilePosition = $('.player').position();
-
-  champPositionInPixel[0] = champTilePosition.left + ((_tileWidth - _charWidth) * 0.5);
-  champPositionInPixel[1] = champTilePosition.top + ((_tileWidth - _charWidth) * 0.5);
-
-  return champPositionInPixel;
-}
-
-function getCreepPosition() {
-  var creepPositionInPixel = [0, 0];
-  var creepTilePosition = $('.creep').position();
-
-  console.log(creepTilePosition)
-
-  creepPositionInPixel[0] = creepTilePosition.left + ((_tileWidth - _charWidth) * 0.5);
-  creepPositionInPixel[1] = creepTilePosition.top + ((_tileWidth - _charWidth) * 0.5);
-
-  console.log(creepPositionInPixel)
-
-  return creepPositionInPixel;
-}
-
-function startChampAnimationLoop() {
-  setInterval(function () {
-    if (_animationCounter == 3) _animationCounter = 0;
-
-    $('.champ-spirit').attr("id", "champ-" + _champFaceDirection + "-" + _animationCounter.toString());
-
-    _animationCounter += 1;
-  }, 250);
-}
-
-function startCreepAnimationLoop() {
-  setInterval(function () {
-    if (_animationCounter == 3) _animationCounter = 0;
-
-    $('.creep-spirit').attr("id", "creep-down-" + _animationCounter.toString());
-
-    _animationCounter += 1;
-  }, 250);
-}
-
-var GameStore = assign({}, EventEmitter.prototype, {
-
-  renderGameObjects: function() {
-
-    //render the champ
-    var champPosition = getChampPosition();
-
-    var champStyle = '"top: ' + champPosition[1].toString() + 'px; left: ' + champPosition[0].toString() + 'px;"';
-
-    $('#board').after('<img class="champ-spirit" id="champ-down-0" style=' + champStyle + '>');
-
-    startChampAnimationLoop();
-
-    //render creeps
-    var creepPosition = getCreepPosition();
-
-    var creepStyle = '"top: ' + creepPosition[1].toString() + 'px; left: ' + creepPosition[0].toString() + 'px;"';
-
-    $('#board').after('<img class="creep-spirit" id="creep-down-0" style=' + creepStyle + '>');
-    
-    startCreepAnimationLoop();
-  },
-
-  loadGameMapTiles: function(mapTiles) {
-    _mapTiles = mapTiles.tiles;
-    _champPosition = mapTiles.champLocation;
-    _creepPosition = mapTiles.creepPosition;
-  },
-
-  getGameMap: function() {
-    return _mapTiles;
-  },
-
-  moveChamp: function(keyCode) {
-    setChampFaceDirection(keyCode);
-
-    if (canMoveTo()) {
-      var moveVector = [0, 0];
-
-      switch(_champFaceDirection) {
-        case "up":
-          moveVector[1] -= 1;
-          break;
-
-        case "down":
-          moveVector[1] += 1;
-          break;
-
-        case "left":
-          moveVector[0] -= 1;
-          break;
-
-        case "right":
-          moveVector[0] += 1;
-          break;
-
-        default:
-          break;
-      }
-
-      //actually move our champ
-      $('.champ-spirit').animate({
-        left : "+=" + (moveVector[0] * _tileWidth).toString(),
-        top: "+=" + (moveVector[1] * _tileWidth).toString()
-      }, 1000);
-
-      //update champ position in tiles map
-      updateChampinTiles();
-    }
-  },
-
-  //not specific to this game
-  emitChange: function() {
-    this.emit(CHANGE_EVENT);
-  },
-
-  /**
-   * @param {function} callback
-   */
-  addChangeListener: function(callback) {
-    this.on(CHANGE_EVENT, callback);
-  },
-
-  /**
-   * @param {function} callback
-   */
-  removeChangeListener: function(callback) {
-    this.removeListener(CHANGE_EVENT, callback);
-  }
-
-});
-
-// Register to handle all updates
-GameDispatcher.register(function(payload) {
-  var action = payload.action;
-  
-  switch(action.actionType) {
-    case GameConstants.CARD_SELECT:
-      id = action.id;
-      cardSelect(id);
-      break;
-
-    case GameConstants.ONCLICK_CONFIRM:
-      onClickConfirm();
-      break;
-
-    case GameConstants.ONCLICK_START_GAME:
-      onClickStartGame();
-      break;
-
-    default:
-      return true;
-  }
-
-  // This often goes in each case that should trigger a UI change. This store
-  // needs to trigger a UI change after every view action, so we can make the
-  // code less repetitive by putting it here.  We need the default case,
-  // however, to make sure this only gets called after one of the cases above.
-  GameStore.emitChange();
-
-  return true; // No errors.  Needed by promise in Dispatcher.
-});
-
-module.exports = GameStore;
-
-},{"./constants":158,"./dispatcher":159,"events":2,"jquery":8,"object-assign":10}],161:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
+module.exports=require(157)
+},{"c:\\dream-game\\public\\js\\actions\\champActionCreators.js":157}],159:[function(require,module,exports){
+module.exports=require(157)
+},{"c:\\dream-game\\public\\js\\actions\\champActionCreators.js":157}],160:[function(require,module,exports){
+module.exports=require(157)
+},{"c:\\dream-game\\public\\js\\actions\\champActionCreators.js":157}],161:[function(require,module,exports){
 var React = require('react');
-var ReactPropTypes = React.PropTypes;
+
+var ChampStore = require('../stores/champStore');
+var ChampAcionCreators = require('../actions/champActionCreators');
+
+var Champ = React.createClass({displayName: 'Champ',
+  render: function() {
+    var champPosition = ChampStore.getChampPosition();
+
+    var champStyle = {
+      top: champPosition[0],
+      left: champPosition[1]
+    };
+
+    return (
+      React.createElement("div", {style: champStyle}, 
+        React.createElement("img", {className: "champ-spirit", id: "champ-down-0", style: champStyle})
+      )
+    );
+  }
+
+});
+
+module.exports = Champ;
+},{"../actions/champActionCreators":157,"../stores/champStore":167,"react":156}],162:[function(require,module,exports){
+module.exports=require(157)
+},{"c:\\dream-game\\public\\js\\actions\\champActionCreators.js":157}],163:[function(require,module,exports){
+module.exports=require(157)
+},{"c:\\dream-game\\public\\js\\actions\\champActionCreators.js":157}],164:[function(require,module,exports){
+var React = require('react');
 var $ = require('jquery');
-var GameActions = require('./actions');
-var GameStore = require('./store');
 
-function getGameState() {
-  return{
-    gameMap: GameStore.getGameMap()
-  }
-}
-
-var Game = React.createClass({displayName: 'Game',
-  getInitialState:function(){
-    return getGameState();
-  },
-
-  onClickStartGame:function(e){
-
-    GameStore.renderGameObjects();
-
-  },
-
-  handleKey:function(e){
-    var keyCode = e.which;
-
-    //if any of the move key was pressed
-    if (keyCode == 119 ||
-        keyCode == 115 ||
-        keyCode == 97 ||
-        keyCode == 100) {
-      GameStore.moveChamp(keyCode);
-    }
-
-    this.forceUpdate();
-  },
-
-  render:function(){
-    return (
-      React.createElement("div", {className: "wrapper", onKeyPress: this.handleKey}, 
-        React.createElement("div", {className: "map"}, React.createElement(Map, {tiles: this.state.gameMap})), 
-        React.createElement("div", null, React.createElement("button", {className: "start-btn", onClick: this.onClickStartGame}, "Game Start"))
-      )
-      )
-  }
-});
-
-var Map = React.createClass({displayName: 'Map',
-
-  render: function(){
-    var row = this.props.tiles.map(function(row){
-      return React.createElement(Row, {tileRow: row})
-    });
-
-    return (
-      React.createElement("div", {className: "row"}, 
-        row
-      )
-    )
-  }
-});
+var MapStore = require('../stores/mapStore');
+var MapAcionCreators = require('../actions/mapActionCreators');
 
 var Row = React.createClass({displayName: 'Row',
 
@@ -28902,8 +28578,190 @@ var Tiles = React.createClass({displayName: 'Tiles',
   }
 });
 
-module.exports = Game;
-},{"./actions":157,"./store":160,"jquery":8,"react":156}],162:[function(require,module,exports){
+var Map = React.createClass({displayName: 'Map',
+  getInitialState: function() {
+    return{
+      tiles: MapStore.getMap()
+    }
+  },
+
+  render: function() {
+    var row = this.state.tiles.map(function(row){
+      return React.createElement(Row, {tileRow: row})
+    });
+
+    return (
+      React.createElement("div", {className: "row"}, 
+        row
+      )
+    )
+  }
+});
+
+module.exports = Map;
+},{"../actions/mapActionCreators":160,"../stores/mapStore":168,"jquery":8,"react":156}],165:[function(require,module,exports){
+var keyMirror = require('keymirror');
+
+module.exports = keyMirror({
+  CARD_SELECT: null,
+  ONCLICK_CONFIRM: null,
+  ONCLICK_START_GAME: null,
+  UPDATE_MAP:null
+});
+
+},{"keymirror":9}],166:[function(require,module,exports){
+/* AppDispatcher
+ *
+ * A singleton that operates as the central hub for application updates.
+ */
+
+var Dispatcher = require('flux').Dispatcher;
+var assign = require('object-assign');
+
+var GameDispatcher = assign(new Dispatcher(), {
+
+  /**
+   * A bridge function between the views and the dispatcher, marking the action
+   * as a view action.  Another variant here could be handleServerAction.
+   * @param  {object} action The data coming from the view.
+   */
+  handleViewAction: function(action) {
+    this.dispatch({
+      source: 'VIEW_ACTION',
+      action: action
+    });
+  }
+
+});
+
+module.exports = GameDispatcher;
+
+},{"flux":5,"object-assign":10}],167:[function(require,module,exports){
+var GameDispatcher = require('../dispatcher');
+var EventEmitter = require('events').EventEmitter;
+var GameConstants = require('../constants');
+var assign = require('object-assign');
+var $ = require('jquery');
+var CHANGE_EVENT = 'change';
+
+var MapStore = require('../stores/mapStore');
+
+var _champTile = null;
+var _champPosition = [0, 0];
+var _tileWidth = 50;
+var _charWidth = 32;
+var _animationCounter = 0;
+var _champFaceDirection = "down";
+
+function loadChampTile() {
+  if(_champTile === null) _champTile = MapStore.getChampInitialTile();
+}
+
+function loadChampPosition() {
+  _champPosition[0] = $('.player').position().top;
+  _champPosition[0] += (_tileWidth - _charWidth) * 0.5;
+
+  _champPosition[1] = $('.player').position().left;
+  _champPosition[1] += (_tileWidth - _charWidth) * 0.5;
+}
+
+function startChampAnimationLoop() {
+  setInterval(function () {
+    if (_animationCounter == 3) _animationCounter = 0;
+
+    $('.champ-spirit').attr("id", "champ-" + _champFaceDirection + "-" + _animationCounter.toString());
+
+    _animationCounter += 1;
+  }, 250);
+}
+
+var ChampStore = assign({}, EventEmitter.prototype, {
+  getChampPosition: function() {
+    loadChampTile();
+    loadChampPosition();
+    return _champPosition;
+  },
+
+  startChampAnimationLoop: function() {
+    startChampAnimationLoop();
+  }
+});
+
+// Register to handle all updates
+GameDispatcher.register(function(payload) {
+  var action = payload.action;
+  
+  switch(action.actionType) {
+    case GameConstants.UPDATE_MAP:
+      location = action.location;
+      value = action.value;
+      updateMap(location, value);
+      break;
+
+    default:
+      return true;
+  }
+
+  ChampStore.emitChange();
+
+  return true;
+});
+
+module.exports = ChampStore;
+
+},{"../constants":165,"../dispatcher":166,"../stores/mapStore":168,"events":2,"jquery":8,"object-assign":10}],168:[function(require,module,exports){
+var GameDispatcher = require('../dispatcher');
+var EventEmitter = require('events').EventEmitter;
+var GameConstants = require('../constants');
+var assign = require('object-assign');
+var $ = require('jquery');
+var CHANGE_EVENT = 'change';
+
+var mapTiles = require('../../map/level-1.json');
+
+var _map = null;
+
+function loadMap() {
+  _map = mapTiles.tiles;
+}
+
+var MapStore = assign({}, EventEmitter.prototype, {
+  getMap: function() {
+    if (_map === null) {
+      loadMap();
+    }
+
+    return _map;
+  },
+
+  getChampInitialTile: function() {
+    return mapTiles.champLocation;
+  }
+});
+
+// Register to handle all updates
+GameDispatcher.register(function(payload) {
+  var action = payload.action;
+  
+  switch(action.actionType) {
+    case GameConstants.UPDATE_MAP:
+      location = action.location;
+      value = action.value;
+      updateMap(location, value);
+      break;
+
+    default:
+      return true;
+  }
+
+  MapStore.emitChange();
+
+  return true;
+});
+
+module.exports = MapStore;
+
+},{"../../map/level-1.json":169,"../constants":165,"../dispatcher":166,"events":2,"jquery":8,"object-assign":10}],169:[function(require,module,exports){
 module.exports={
   "tiles": [
     [0, 1, 0, 0, 0, 0, 0, 0],
