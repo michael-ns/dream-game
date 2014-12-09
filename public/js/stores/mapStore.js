@@ -5,12 +5,12 @@ var assign = require('object-assign');
 var $ = require('jquery');
 var CHANGE_EVENT = 'change';
 
-var mapTiles = require('../../map/level-1.json');
+var _mapTiles = require('../../map/level-1.json');
 
 var _map = null;
 
 function loadMap() {
-  _map = mapTiles.tiles;
+  _map = _mapTiles.tiles;
 }
 
 var MapStore = assign({}, EventEmitter.prototype, {
@@ -23,7 +23,26 @@ var MapStore = assign({}, EventEmitter.prototype, {
   },
 
   getChampInitialTile: function() {
-    return mapTiles.champLocation;
+    return _mapTiles.champLocation;
+  },
+
+  //not specific to this game
+  emitChange: function() {
+    this.emit(CHANGE_EVENT);
+  },
+
+  /**
+   * @param {function} callback
+   */
+  addChangeListener: function(callback) {
+    this.on(CHANGE_EVENT, callback);
+  },
+
+  /**
+   * @param {function} callback
+   */
+  removeChangeListener: function(callback) {
+    this.removeListener(CHANGE_EVENT, callback);
   }
 });
 

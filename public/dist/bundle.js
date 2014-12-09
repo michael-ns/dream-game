@@ -28495,14 +28495,29 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":38}],157:[function(require,module,exports){
+var GameDispatcher = require('../dispatcher');
+var GameConstants = require('../constants');
 
-},{}],158:[function(require,module,exports){
-module.exports=require(157)
-},{"c:\\dream-game\\public\\js\\actions\\champActionCreators.js":157}],159:[function(require,module,exports){
-module.exports=require(157)
-},{"c:\\dream-game\\public\\js\\actions\\champActionCreators.js":157}],160:[function(require,module,exports){
-module.exports=require(157)
-},{"c:\\dream-game\\public\\js\\actions\\champActionCreators.js":157}],161:[function(require,module,exports){
+module.exports = {
+  moveChamp: function(keyCode) {
+    GameDispatcher.handleViewAction({
+      actionType: GameConstants.MOVE_CHAMP,
+      keyCode: keyCode
+    });
+  }
+};
+},{"../constants":165,"../dispatcher":166}],158:[function(require,module,exports){
+
+},{}],159:[function(require,module,exports){
+module.exports=require(158)
+},{"c:\\dream-game\\public\\js\\actions\\creepActionCreators.js":158}],160:[function(require,module,exports){
+var GameDispatcher = require('../dispatcher');
+var GameConstants = require('../constants');
+
+module.exports = {
+
+};
+},{"../constants":165,"../dispatcher":166}],161:[function(require,module,exports){
 var React = require('react');
 
 var ChampStore = require('../stores/champStore');
@@ -28528,10 +28543,10 @@ var Champ = React.createClass({displayName: 'Champ',
 
 module.exports = Champ;
 },{"../actions/champActionCreators":157,"../stores/champStore":167,"react":156}],162:[function(require,module,exports){
-module.exports=require(157)
-},{"c:\\dream-game\\public\\js\\actions\\champActionCreators.js":157}],163:[function(require,module,exports){
-module.exports=require(157)
-},{"c:\\dream-game\\public\\js\\actions\\champActionCreators.js":157}],164:[function(require,module,exports){
+module.exports=require(158)
+},{"c:\\dream-game\\public\\js\\actions\\creepActionCreators.js":158}],163:[function(require,module,exports){
+module.exports=require(158)
+},{"c:\\dream-game\\public\\js\\actions\\creepActionCreators.js":158}],164:[function(require,module,exports){
 var React = require('react');
 var $ = require('jquery');
 
@@ -28606,7 +28621,8 @@ module.exports = keyMirror({
   CARD_SELECT: null,
   ONCLICK_CONFIRM: null,
   ONCLICK_START_GAME: null,
-  UPDATE_MAP:null
+  UPDATE_MAP:null,
+  ON_KEY_PRESS: null
 });
 
 },{"keymirror":9}],166:[function(require,module,exports){
@@ -28645,6 +28661,7 @@ var $ = require('jquery');
 var CHANGE_EVENT = 'change';
 
 var MapStore = require('../stores/mapStore');
+var MapAcionCreators = require('../actions/mapActionCreators');
 
 var _champTile = null;
 var _champPosition = [0, 0];
@@ -28675,6 +28692,119 @@ function startChampAnimationLoop() {
   }, 250);
 }
 
+function setChampFaceDirection(keyCode) {
+  switch(keyCode) {
+    case 119:
+      _champFaceDirection = "up";
+      break;
+
+    case 115:
+      _champFaceDirection = "down";
+      break;
+
+    case 97:
+      _champFaceDirection = "left";
+      break;
+
+    case 100:
+      _champFaceDirection = "right";
+      break;
+
+    default:
+      break;
+  }
+}
+
+function canMoveTo() {
+  var canMove = false;
+
+  switch(_champFaceDirection) {
+    case "up":
+      if(_champPosition[0] != 0) canMove = true;
+      break;
+
+    case "down":
+      if(_champPosition[0] != 7) canMove = true;
+      break;
+
+    case "left":
+      if(_champPosition[1] != 0) canMove = true;
+      break;
+
+    case "right":
+      if(_champPosition[1] != 7) canMove = true;
+      break;
+
+    default:
+      break;
+  }
+
+  return canMove;
+}
+
+function updateChampinTiles() {
+
+  switch(_champFaceDirection) {
+    case "up":
+      _champTile[0] -= 1;
+      break;
+
+    case "down":
+      _champTile[0] += 1;
+      break;
+
+    case "left":
+      _champTile[0] -= 1;
+      break;
+
+    case "right":
+      _champTile[0] += 1;
+      break;
+
+    default:
+      break;
+  }
+
+}
+
+function moveChamp(keyCode) {
+  setChampFaceDirection(keyCode);
+
+  if (canMoveTo()) {
+    var moveVector = [0, 0];
+
+    switch(_champFaceDirection) {
+      case "up":
+        moveVector[1] -= 1;
+        break;
+
+      case "down":
+        moveVector[1] += 1;
+        break;
+
+      case "left":
+        moveVector[0] -= 1;
+        break;
+
+      case "right":
+        moveVector[0] += 1;
+        break;
+
+      default:
+        break;
+    }
+
+    //actually move our champ
+    $('.champ-spirit').animate({
+      left : "+=" + (moveVector[0] * _tileWidth).toString(),
+      top: "+=" + (moveVector[1] * _tileWidth).toString()
+    }, 1000);
+
+    //update champ position in tiles map
+    updateChampinTiles();
+  }
+}
+
 var ChampStore = assign({}, EventEmitter.prototype, {
   getChampPosition: function() {
     loadChampTile();
@@ -28684,6 +28814,25 @@ var ChampStore = assign({}, EventEmitter.prototype, {
 
   startChampAnimationLoop: function() {
     startChampAnimationLoop();
+  },
+
+  //not specific to this game
+  emitChange: function() {
+    this.emit(CHANGE_EVENT);
+  },
+
+  /**
+   * @param {function} callback
+   */
+  addChangeListener: function(callback) {
+    this.on(CHANGE_EVENT, callback);
+  },
+
+  /**
+   * @param {function} callback
+   */
+  removeChangeListener: function(callback) {
+    this.removeListener(CHANGE_EVENT, callback);
   }
 });
 
@@ -28692,10 +28841,9 @@ GameDispatcher.register(function(payload) {
   var action = payload.action;
   
   switch(action.actionType) {
-    case GameConstants.UPDATE_MAP:
-      location = action.location;
-      value = action.value;
-      updateMap(location, value);
+    case GameConstants.MOVE_CHAMP:
+      keyCode = action.keyCode;
+      moveChamp(keyCode);
       break;
 
     default:
@@ -28709,7 +28857,7 @@ GameDispatcher.register(function(payload) {
 
 module.exports = ChampStore;
 
-},{"../constants":165,"../dispatcher":166,"../stores/mapStore":168,"events":2,"jquery":8,"object-assign":10}],168:[function(require,module,exports){
+},{"../actions/mapActionCreators":160,"../constants":165,"../dispatcher":166,"../stores/mapStore":168,"events":2,"jquery":8,"object-assign":10}],168:[function(require,module,exports){
 var GameDispatcher = require('../dispatcher');
 var EventEmitter = require('events').EventEmitter;
 var GameConstants = require('../constants');
@@ -28717,12 +28865,12 @@ var assign = require('object-assign');
 var $ = require('jquery');
 var CHANGE_EVENT = 'change';
 
-var mapTiles = require('../../map/level-1.json');
+var _mapTiles = require('../../map/level-1.json');
 
 var _map = null;
 
 function loadMap() {
-  _map = mapTiles.tiles;
+  _map = _mapTiles.tiles;
 }
 
 var MapStore = assign({}, EventEmitter.prototype, {
@@ -28735,7 +28883,26 @@ var MapStore = assign({}, EventEmitter.prototype, {
   },
 
   getChampInitialTile: function() {
-    return mapTiles.champLocation;
+    return _mapTiles.champLocation;
+  },
+
+  //not specific to this game
+  emitChange: function() {
+    this.emit(CHANGE_EVENT);
+  },
+
+  /**
+   * @param {function} callback
+   */
+  addChangeListener: function(callback) {
+    this.on(CHANGE_EVENT, callback);
+  },
+
+  /**
+   * @param {function} callback
+   */
+  removeChangeListener: function(callback) {
+    this.removeListener(CHANGE_EVENT, callback);
   }
 });
 
@@ -28773,7 +28940,7 @@ module.exports={
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0]
   ],
-  "champLocation": [1, 0],
+  "champLocation": [0, 1],
   "creepsLocationCollection": [3, 1]
 }
 },{}]},{},[1]);
