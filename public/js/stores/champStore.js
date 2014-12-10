@@ -152,7 +152,7 @@ function moveChamp(keyCode) {
     }
 
     //actually move our champ
-    $('.champ-spirit').animate({
+    $('.champ-block').animate({
       left : "+=" + (moveVector[0] * _tileWidth).toString(),
       top: "+=" + (moveVector[1] * _tileWidth).toString()
     }, 1000);
@@ -162,9 +162,12 @@ function moveChamp(keyCode) {
 
     //handle potential collision with other objects on the game map
     champTakeDamage(MapStore.champCollisionHandler(_champTile));
-    console.log(_champHP);
 
   }
+}
+
+function getChampHP() {
+  return _champHP;
 }
 
 var ChampStore = assign({}, EventEmitter.prototype, {
@@ -178,13 +181,7 @@ var ChampStore = assign({}, EventEmitter.prototype, {
     startChampAnimationLoop();
   },
 
-  champTakeDamage: function(damage) {
-    console.log(_champHP);
-
-    _champHP -= damage;
-
-    console.log(_champHP);
-  },
+  getChampHP: getChampHP,
 
   //not specific to this game
   emitChange: function() {
@@ -213,14 +210,14 @@ GameDispatcher.register(function(payload) {
   switch(action.actionType) {
     case GameConstants.MOVE_CHAMP:
       keyCode = action.keyCode;
+      console.log('trying to move champ', keyCode)
       moveChamp(keyCode);
+      ChampStore.emitChange();
       break;
 
     default:
       return true;
   }
-
-  ChampStore.emitChange();
 
   return true;
 });

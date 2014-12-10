@@ -28532,20 +28532,41 @@ var React = require('react');
 var ChampStore = require('../stores/champStore');
 var ChampAcionCreators = require('../actions/champActionCreators');
 
-var Champ = React.createClass({displayName: 'Champ',
-  render: function() {
-    var champPosition = ChampStore.getChampPosition();
+function getStateFromStore() {
+  return {
+    position: ChampStore.getChampPosition(),
+    hp: ChampStore.getChampHP()
+  }
+}
 
+var Champ = React.createClass({displayName: 'Champ',
+  getInitialState: function() {
+    return getStateFromStore();
+  },
+
+  componentDidMount: function() {
+    ChampStore.addChangeListener(this.onChange);
+  },
+
+  render: function() {
     var champStyle = {
-      top: champPosition[0],
-      left: champPosition[1]
+      top: this.state.position[0],
+      left: this.state.position[1],
+      position: 'fixed'
     };
 
+    console.log(this.state)
+
     return (
-      React.createElement("div", {style: champStyle}, 
-        React.createElement("img", {className: "champ-spirit", id: "champ-down-0", style: champStyle})
+      React.createElement("div", {className: "champ-block", style: champStyle}, 
+        React.createElement("img", {className: "champ-spirit", id: "champ-down-0"}), 
+        React.createElement("div", {className: "champ-HP"}, this.state.hp)
       )
     );
+  },
+  onChange: function() {
+    console.log('states changing')
+    return this.setState(getStateFromStore());
   }
 
 });
@@ -28840,7 +28861,7 @@ function moveChamp(keyCode) {
     }
 
     //actually move our champ
-    $('.champ-spirit').animate({
+    $('.champ-block').animate({
       left : "+=" + (moveVector[0] * _tileWidth).toString(),
       top: "+=" + (moveVector[1] * _tileWidth).toString()
     }, 1000);
@@ -28850,9 +28871,12 @@ function moveChamp(keyCode) {
 
     //handle potential collision with other objects on the game map
     champTakeDamage(MapStore.champCollisionHandler(_champTile));
-    console.log(_champHP);
 
   }
+}
+
+function getChampHP() {
+  return _champHP;
 }
 
 var ChampStore = assign({}, EventEmitter.prototype, {
@@ -28866,13 +28890,7 @@ var ChampStore = assign({}, EventEmitter.prototype, {
     startChampAnimationLoop();
   },
 
-  champTakeDamage: function(damage) {
-    console.log(_champHP);
-
-    _champHP -= damage;
-
-    console.log(_champHP);
-  },
+  getChampHP: getChampHP,
 
   //not specific to this game
   emitChange: function() {
@@ -28901,14 +28919,14 @@ GameDispatcher.register(function(payload) {
   switch(action.actionType) {
     case GameConstants.MOVE_CHAMP:
       keyCode = action.keyCode;
+      console.log('trying to move champ', keyCode)
       moveChamp(keyCode);
+      ChampStore.emitChange();
       break;
 
     default:
       return true;
   }
-
-  ChampStore.emitChange();
 
   return true;
 });
@@ -29032,8 +29050,6 @@ function loadMap() {
 
 function champCollisionHandler(champPosition) {
 
-  console.log(champPosition)
-
   var damageToChamp = 0;
   
   var objectInPosition = _mapTiles.tiles[champPosition[0]][champPosition[1]];
@@ -29047,8 +29063,6 @@ function champCollisionHandler(champPosition) {
     }
 
   }
-
-  console.log('dmg to champ!', damageToChamp);
 
   return damageToChamp;
 }

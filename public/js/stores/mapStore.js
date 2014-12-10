@@ -15,8 +15,6 @@ function loadMap() {
 
 function champCollisionHandler(champPosition) {
 
-  console.log(champPosition)
-
   var damageToChamp = 0;
   
   var objectInPosition = _mapTiles.tiles[champPosition[0]][champPosition[1]];
@@ -30,8 +28,6 @@ function champCollisionHandler(champPosition) {
     }
 
   }
-
-  console.log('dmg to champ!', damageToChamp);
 
   return damageToChamp;
 }

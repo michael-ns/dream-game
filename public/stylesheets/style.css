@@ -145,3 +145,10 @@ img {
   background: url(../img/char-tiles.png) -160px 0;
   border: 0;
 }
+
+.champ-HP {
+  color: red;
+  z-index: 999;
+  margin-top: -16px;
+  margin-left: 12px;
+}
