@@ -5,8 +5,8 @@ var assign = require('object-assign');
 var $ = require('jquery');
 var CHANGE_EVENT = 'change';
 
-var MapStore = require('../stores/mapStore');
-var MapAcionCreators = require('../actions/mapActionCreators');
+var MapStore = require('./mapStore');
+var CreepStore = require('./creepStore');
 
 var _champTile = null;
 var _champPosition = [0, 0];
@@ -14,9 +14,13 @@ var _tileWidth = 50;
 var _charWidth = 32;
 var _animationCounter = 0;
 var _champFaceDirection = "down";
+var _champHP = 5;
 
 function loadChampTile() {
-  if(_champTile === null) _champTile = MapStore.getChampInitialTile();
+
+  if(_champTile === null) {
+    _champTile = MapStore.getChampInitialTile();
+  }
 }
 
 function loadChampPosition() {
@@ -65,19 +69,19 @@ function canMoveTo() {
 
   switch(_champFaceDirection) {
     case "up":
-      if(_champPosition[0] != 0) canMove = true;
+      if(_champTile[0] != 0) canMove = true;
       break;
 
     case "down":
-      if(_champPosition[0] != 7) canMove = true;
+      if(_champTile[0] != 7) canMove = true;
       break;
 
     case "left":
-      if(_champPosition[1] != 0) canMove = true;
+      if(_champTile[1] != 0) canMove = true;
       break;
 
     case "right":
-      if(_champPosition[1] != 7) canMove = true;
+      if(_champTile[1] != 7) canMove = true;
       break;
 
     default:
@@ -99,17 +103,25 @@ function updateChampinTiles() {
       break;
 
     case "left":
-      _champTile[0] -= 1;
+      _champTile[1] -= 1;
       break;
 
     case "right":
-      _champTile[0] += 1;
+      _champTile[1] += 1;
       break;
 
     default:
       break;
   }
 
+}
+
+function champTakeDamage(damage) {
+  _champHP -= damage;
+
+  if(damage > 0) {
+    CreepStore.kill();
+  }
 }
 
 function moveChamp(keyCode) {
@@ -145,8 +157,13 @@ function moveChamp(keyCode) {
       top: "+=" + (moveVector[1] * _tileWidth).toString()
     }, 1000);
 
-    //update champ position in tiles map
+    //update champ position
     updateChampinTiles();
+
+    //handle potential collision with other objects on the game map
+    champTakeDamage(MapStore.champCollisionHandler(_champTile));
+    console.log(_champHP);
+
   }
 }
 
@@ -159,6 +176,14 @@ var ChampStore = assign({}, EventEmitter.prototype, {
 
   startChampAnimationLoop: function() {
     startChampAnimationLoop();
+  },
+
+  champTakeDamage: function(damage) {
+    console.log(_champHP);
+
+    _champHP -= damage;
+
+    console.log(_champHP);
   },
 
   //not specific to this game

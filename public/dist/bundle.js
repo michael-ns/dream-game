@@ -14,6 +14,7 @@ var Champ = require('./components/champ');
 var Creep = require('./components/creep');
 
 var ChampStore = require('./stores/champStore');
+var CreepStore = require('./stores/creepStore');
 
 var Game = React.createClass({displayName: 'Game',
   onKeyPress: function(e) {
@@ -30,10 +31,14 @@ var Game = React.createClass({displayName: 'Game',
   onClickStartGame: function(e) {
     React.renderComponent(
       Champ(), document.getElementById('champ')
-      //Creep(), document.getElementById('creep')
+    );
+
+    React.renderComponent(
+      Creep(), document.getElementById('creep')
     );
 
     ChampStore.startChampAnimationLoop();
+    CreepStore.startCreepAnimationLoop();
   },
 
   render: function() {
@@ -53,7 +58,7 @@ module.exports = Game;
 React.renderComponent(
   Game(), document.getElementById('board')
 );
-},{"./actions/champActionCreators":157,"./actions/creepActionCreators":158,"./actions/dashboardActionCreators":159,"./actions/mapActionCreators":160,"./components/champ":161,"./components/creep":162,"./components/dashboard":163,"./components/map":164,"./stores/champStore":167,"cloneextend":4,"jquery":8,"react":156}],2:[function(require,module,exports){
+},{"./actions/champActionCreators":157,"./actions/creepActionCreators":158,"./actions/dashboardActionCreators":159,"./actions/mapActionCreators":160,"./components/champ":161,"./components/creep":162,"./components/dashboard":163,"./components/map":164,"./stores/champStore":167,"./stores/creepStore":168,"cloneextend":4,"jquery":8,"react":156}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -28507,15 +28512,19 @@ module.exports = {
   }
 };
 },{"../constants":165,"../dispatcher":166}],158:[function(require,module,exports){
-
-},{}],159:[function(require,module,exports){
-module.exports=require(158)
-},{"c:\\dream-game\\public\\js\\actions\\creepActionCreators.js":158}],160:[function(require,module,exports){
 var GameDispatcher = require('../dispatcher');
 var GameConstants = require('../constants');
 
 module.exports = {
 
+};
+},{"../constants":165,"../dispatcher":166}],159:[function(require,module,exports){
+
+},{}],160:[function(require,module,exports){
+var GameDispatcher = require('../dispatcher');
+var GameConstants = require('../constants');
+
+module.exports = {
 };
 },{"../constants":165,"../dispatcher":166}],161:[function(require,module,exports){
 var React = require('react');
@@ -28543,10 +28552,33 @@ var Champ = React.createClass({displayName: 'Champ',
 
 module.exports = Champ;
 },{"../actions/champActionCreators":157,"../stores/champStore":167,"react":156}],162:[function(require,module,exports){
-module.exports=require(158)
-},{"c:\\dream-game\\public\\js\\actions\\creepActionCreators.js":158}],163:[function(require,module,exports){
-module.exports=require(158)
-},{"c:\\dream-game\\public\\js\\actions\\creepActionCreators.js":158}],164:[function(require,module,exports){
+var React = require('react');
+
+var CreepStore = require('../stores/creepStore');
+var CreepAcionCreators = require('../actions/creepActionCreators');
+
+var Creep = React.createClass({displayName: 'Creep',
+  render: function() {
+    var creepPosition = CreepStore.getCreepPosition();
+
+    var creepStyle = {
+      top: creepPosition[0],
+      left: creepPosition[1]
+    };
+
+    return (
+      React.createElement("div", {style: creepStyle}, 
+        React.createElement("img", {className: "creep-spirit", id: "creep-down-0", style: creepStyle})
+      )
+    );
+  }
+
+});
+
+module.exports = Creep;
+},{"../actions/creepActionCreators":158,"../stores/creepStore":168,"react":156}],163:[function(require,module,exports){
+module.exports=require(159)
+},{"c:\\dream-game\\public\\js\\actions\\dashboardActionCreators.js":159}],164:[function(require,module,exports){
 var React = require('react');
 var $ = require('jquery');
 
@@ -28614,7 +28646,7 @@ var Map = React.createClass({displayName: 'Map',
 });
 
 module.exports = Map;
-},{"../actions/mapActionCreators":160,"../stores/mapStore":168,"jquery":8,"react":156}],165:[function(require,module,exports){
+},{"../actions/mapActionCreators":160,"../stores/mapStore":169,"jquery":8,"react":156}],165:[function(require,module,exports){
 var keyMirror = require('keymirror');
 
 module.exports = keyMirror({
@@ -28622,7 +28654,8 @@ module.exports = keyMirror({
   ONCLICK_CONFIRM: null,
   ONCLICK_START_GAME: null,
   UPDATE_MAP:null,
-  ON_KEY_PRESS: null
+  ON_KEY_PRESS: null,
+  MOVE_CHAMP: null
 });
 
 },{"keymirror":9}],166:[function(require,module,exports){
@@ -28660,8 +28693,8 @@ var assign = require('object-assign');
 var $ = require('jquery');
 var CHANGE_EVENT = 'change';
 
-var MapStore = require('../stores/mapStore');
-var MapAcionCreators = require('../actions/mapActionCreators');
+var MapStore = require('./mapStore');
+var CreepStore = require('./creepStore');
 
 var _champTile = null;
 var _champPosition = [0, 0];
@@ -28669,9 +28702,13 @@ var _tileWidth = 50;
 var _charWidth = 32;
 var _animationCounter = 0;
 var _champFaceDirection = "down";
+var _champHP = 5;
 
 function loadChampTile() {
-  if(_champTile === null) _champTile = MapStore.getChampInitialTile();
+
+  if(_champTile === null) {
+    _champTile = MapStore.getChampInitialTile();
+  }
 }
 
 function loadChampPosition() {
@@ -28720,19 +28757,19 @@ function canMoveTo() {
 
   switch(_champFaceDirection) {
     case "up":
-      if(_champPosition[0] != 0) canMove = true;
+      if(_champTile[0] != 0) canMove = true;
       break;
 
     case "down":
-      if(_champPosition[0] != 7) canMove = true;
+      if(_champTile[0] != 7) canMove = true;
       break;
 
     case "left":
-      if(_champPosition[1] != 0) canMove = true;
+      if(_champTile[1] != 0) canMove = true;
       break;
 
     case "right":
-      if(_champPosition[1] != 7) canMove = true;
+      if(_champTile[1] != 7) canMove = true;
       break;
 
     default:
@@ -28754,17 +28791,25 @@ function updateChampinTiles() {
       break;
 
     case "left":
-      _champTile[0] -= 1;
+      _champTile[1] -= 1;
       break;
 
     case "right":
-      _champTile[0] += 1;
+      _champTile[1] += 1;
       break;
 
     default:
       break;
   }
 
+}
+
+function champTakeDamage(damage) {
+  _champHP -= damage;
+
+  if(damage > 0) {
+    CreepStore.kill();
+  }
 }
 
 function moveChamp(keyCode) {
@@ -28800,8 +28845,13 @@ function moveChamp(keyCode) {
       top: "+=" + (moveVector[1] * _tileWidth).toString()
     }, 1000);
 
-    //update champ position in tiles map
+    //update champ position
     updateChampinTiles();
+
+    //handle potential collision with other objects on the game map
+    champTakeDamage(MapStore.champCollisionHandler(_champTile));
+    console.log(_champHP);
+
   }
 }
 
@@ -28814,6 +28864,14 @@ var ChampStore = assign({}, EventEmitter.prototype, {
 
   startChampAnimationLoop: function() {
     startChampAnimationLoop();
+  },
+
+  champTakeDamage: function(damage) {
+    console.log(_champHP);
+
+    _champHP -= damage;
+
+    console.log(_champHP);
   },
 
   //not specific to this game
@@ -28857,7 +28915,106 @@ GameDispatcher.register(function(payload) {
 
 module.exports = ChampStore;
 
-},{"../actions/mapActionCreators":160,"../constants":165,"../dispatcher":166,"../stores/mapStore":168,"events":2,"jquery":8,"object-assign":10}],168:[function(require,module,exports){
+},{"../constants":165,"../dispatcher":166,"./creepStore":168,"./mapStore":169,"events":2,"jquery":8,"object-assign":10}],168:[function(require,module,exports){
+var GameDispatcher = require('../dispatcher');
+var EventEmitter = require('events').EventEmitter;
+var GameConstants = require('../constants');
+var assign = require('object-assign');
+var $ = require('jquery');
+var CHANGE_EVENT = 'change';
+
+var MapStore = require('../stores/mapStore');
+var MapAcionCreators = require('../actions/mapActionCreators');
+
+var _creepTile = null;
+var _creepPosition = [0, 0];
+var _tileWidth = 50;
+var _charWidth = 32;
+var _animationCounter = 0;
+var _creepFaceDirection = "down";
+
+function loadCreepTile() {
+  if(_creepTile === null) _creepTile = MapStore.getCreepInitialTile();
+}
+
+function loadCreepPosition() {
+  _creepPosition[0] = $('.creep').position().top;
+  _creepPosition[0] += (_tileWidth - _charWidth) * 0.5;
+
+  _creepPosition[1] = $('.creep').position().left;
+  _creepPosition[1] += (_tileWidth - _charWidth) * 0.5;
+}
+
+function startCreepAnimationLoop() {
+  setInterval(function () {
+    if (_animationCounter == 3) _animationCounter = 0;
+
+    $('.creep-spirit').attr("id", "creep-" + _creepFaceDirection + "-" + _animationCounter.toString());
+
+    _animationCounter += 1;
+  }, 250);
+}
+
+function kill() {
+
+  setTimeout(function() {
+    $('.creep-spirit').remove();
+  }, 750);
+
+  
+}
+
+var CreepStore = assign({}, EventEmitter.prototype, {
+  getCreepPosition: function() {
+    loadCreepTile();
+    loadCreepPosition();
+    return _creepPosition;
+  },
+
+  startCreepAnimationLoop: function() {
+    startCreepAnimationLoop();
+  },
+
+  kill: kill,
+
+  //not specific to this game
+  emitChange: function() {
+    this.emit(CHANGE_EVENT);
+  },
+
+  /**
+   * @param {function} callback
+   */
+  addChangeListener: function(callback) {
+    this.on(CHANGE_EVENT, callback);
+  },
+
+  /**
+   * @param {function} callback
+   */
+  removeChangeListener: function(callback) {
+    this.removeListener(CHANGE_EVENT, callback);
+  }
+});
+
+// Register to handle all updates
+GameDispatcher.register(function(payload) {
+  var action = payload.action;
+  
+  switch(action.actionType) {
+
+    default:
+      return true;
+  }
+
+  CreepStore.emitChange();
+
+  return true;
+});
+
+module.exports = CreepStore;
+
+},{"../actions/mapActionCreators":160,"../constants":165,"../dispatcher":166,"../stores/mapStore":169,"events":2,"jquery":8,"object-assign":10}],169:[function(require,module,exports){
 var GameDispatcher = require('../dispatcher');
 var EventEmitter = require('events').EventEmitter;
 var GameConstants = require('../constants');
@@ -28873,6 +29030,29 @@ function loadMap() {
   _map = _mapTiles.tiles;
 }
 
+function champCollisionHandler(champPosition) {
+
+  console.log(champPosition)
+
+  var damageToChamp = 0;
+  
+  var objectInPosition = _mapTiles.tiles[champPosition[0]][champPosition[1]];
+
+  if (objectInPosition != 0) {
+
+    if(objectInPosition == 2) {
+
+      damageToChamp = 1;
+
+    }
+
+  }
+
+  console.log('dmg to champ!', damageToChamp);
+
+  return damageToChamp;
+}
+
 var MapStore = assign({}, EventEmitter.prototype, {
   getMap: function() {
     if (_map === null) {
@@ -28885,6 +29065,12 @@ var MapStore = assign({}, EventEmitter.prototype, {
   getChampInitialTile: function() {
     return _mapTiles.champLocation;
   },
+
+  getCreepInitialTile: function() {
+    return _mapTiles.creepLocation;
+  },
+
+  champCollisionHandler: champCollisionHandler,
 
   //not specific to this game
   emitChange: function() {
@@ -28917,6 +29103,11 @@ GameDispatcher.register(function(payload) {
       updateMap(location, value);
       break;
 
+    case GameConstants.CHAMP_COLLISION_HANDLER:
+      champPosition = action.champPosition;
+      champCollisionHandler(champPosition);
+      break;
+
     default:
       return true;
   }
@@ -28928,7 +29119,7 @@ GameDispatcher.register(function(payload) {
 
 module.exports = MapStore;
 
-},{"../../map/level-1.json":169,"../constants":165,"../dispatcher":166,"events":2,"jquery":8,"object-assign":10}],169:[function(require,module,exports){
+},{"../../map/level-1.json":170,"../constants":165,"../dispatcher":166,"events":2,"jquery":8,"object-assign":10}],170:[function(require,module,exports){
 module.exports={
   "tiles": [
     [0, 1, 0, 0, 0, 0, 0, 0],
@@ -28941,6 +29132,6 @@ module.exports={
     [0, 0, 0, 0, 0, 0, 0, 0]
   ],
   "champLocation": [0, 1],
-  "creepsLocationCollection": [3, 1]
+  "creepLocation": [3, 1]
 }
 },{}]},{},[1]);

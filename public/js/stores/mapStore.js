@@ -13,6 +13,29 @@ function loadMap() {
   _map = _mapTiles.tiles;
 }
 
+function champCollisionHandler(champPosition) {
+
+  console.log(champPosition)
+
+  var damageToChamp = 0;
+  
+  var objectInPosition = _mapTiles.tiles[champPosition[0]][champPosition[1]];
+
+  if (objectInPosition != 0) {
+
+    if(objectInPosition == 2) {
+
+      damageToChamp = 1;
+
+    }
+
+  }
+
+  console.log('dmg to champ!', damageToChamp);
+
+  return damageToChamp;
+}
+
 var MapStore = assign({}, EventEmitter.prototype, {
   getMap: function() {
     if (_map === null) {
@@ -25,6 +48,12 @@ var MapStore = assign({}, EventEmitter.prototype, {
   getChampInitialTile: function() {
     return _mapTiles.champLocation;
   },
+
+  getCreepInitialTile: function() {
+    return _mapTiles.creepLocation;
+  },
+
+  champCollisionHandler: champCollisionHandler,
 
   //not specific to this game
   emitChange: function() {
@@ -55,6 +84,11 @@ GameDispatcher.register(function(payload) {
       location = action.location;
       value = action.value;
       updateMap(location, value);
+      break;
+
+    case GameConstants.CHAMP_COLLISION_HANDLER:
+      champPosition = action.champPosition;
+      champCollisionHandler(champPosition);
       break;
 
     default:

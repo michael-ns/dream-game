@@ -13,6 +13,7 @@ var Champ = require('./components/champ');
 var Creep = require('./components/creep');
 
 var ChampStore = require('./stores/champStore');
+var CreepStore = require('./stores/creepStore');
 
 var Game = React.createClass({
   onKeyPress: function(e) {
@@ -29,10 +30,14 @@ var Game = React.createClass({
   onClickStartGame: function(e) {
     React.renderComponent(
       Champ(), document.getElementById('champ')
-      //Creep(), document.getElementById('creep')
+    );
+
+    React.renderComponent(
+      Creep(), document.getElementById('creep')
     );
 
     ChampStore.startChampAnimationLoop();
+    CreepStore.startCreepAnimationLoop();
   },
 
   render: function() {
