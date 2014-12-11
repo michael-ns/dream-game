@@ -3,20 +3,43 @@ var React = require('react');
 var CreepStore = require('../stores/creepStore');
 var CreepAcionCreators = require('../actions/creepActionCreators');
 
-var Creep = React.createClass({
-  render: function() {
-    var creepPosition = CreepStore.getCreepPosition();
+function getStateFromStore() {
+  return {
+    position: CreepStore.getCreepPosition(),
+    hp: CreepStore.getCreepHP()
+  }
+}
 
+var Creep = React.createClass({
+  getInitialState: function() {
+    return getStateFromStore();
+  },
+
+  componentDidMount: function() {
+    CreepStore.addChangeListener(this.onChange);
+  },
+
+  componentWillUnmount: function() {
+    CreepStore.removeChangeListener(this.onChange);
+  },
+
+  render: function() {
     var creepStyle = {
-      top: creepPosition[0],
-      left: creepPosition[1]
+      top: this.state.position[0],
+      left: this.state.position[1],
+      position: 'fixed'
     };
 
     return (
-      <div style={creepStyle}>
-        <img className="creep-spirit" id="creep-down-0" style={creepStyle} />
+      <div className="creep-block" style={creepStyle}>
+        <img className="creep-spirit" id="creep-down-0" />
+        <div className="creep-HP">{this.state.hp}</div>
       </div>
     );
+  },
+
+  onChange: function() {
+    return this.setState(getStateFromStore());
   }
 
 });

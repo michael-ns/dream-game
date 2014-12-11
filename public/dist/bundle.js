@@ -19,12 +19,14 @@ var CreepStore = require('./stores/creepStore');
 var Game = React.createClass({displayName: 'Game',
   onKeyPress: function(e) {
     var keyCode = e.which;
-
+    
     if (keyCode == 119 ||
         keyCode == 115 ||
         keyCode == 97 ||
         keyCode == 100) {
       ChampActionCreators.moveChamp(keyCode);
+    } else if (keyCode == 106) {
+      ChampActionCreators.champAttack();
     }
   },
 
@@ -28509,6 +28511,12 @@ module.exports = {
       actionType: GameConstants.MOVE_CHAMP,
       keyCode: keyCode
     });
+  },
+
+  champAttack: function() {
+    GameDispatcher.handleViewAction({
+      actionType: GameConstants.CHAMP_ATTACK
+    });
   }
 };
 },{"../constants":165,"../dispatcher":166}],158:[function(require,module,exports){
@@ -28555,8 +28563,6 @@ var Champ = React.createClass({displayName: 'Champ',
       position: 'fixed'
     };
 
-    console.log(this.state)
-
     return (
       React.createElement("div", {className: "champ-block", style: champStyle}, 
         React.createElement("img", {className: "champ-spirit", id: "champ-down-0"}), 
@@ -28565,7 +28571,6 @@ var Champ = React.createClass({displayName: 'Champ',
     );
   },
   onChange: function() {
-    console.log('states changing')
     return this.setState(getStateFromStore());
   }
 
@@ -28578,20 +28583,43 @@ var React = require('react');
 var CreepStore = require('../stores/creepStore');
 var CreepAcionCreators = require('../actions/creepActionCreators');
 
-var Creep = React.createClass({displayName: 'Creep',
-  render: function() {
-    var creepPosition = CreepStore.getCreepPosition();
+function getStateFromStore() {
+  return {
+    position: CreepStore.getCreepPosition(),
+    hp: CreepStore.getCreepHP()
+  }
+}
 
+var Creep = React.createClass({displayName: 'Creep',
+  getInitialState: function() {
+    return getStateFromStore();
+  },
+
+  componentDidMount: function() {
+    CreepStore.addChangeListener(this.onChange);
+  },
+
+  componentWillUnmount: function() {
+    CreepStore.removeChangeListener(this.onChange);
+  },
+
+  render: function() {
     var creepStyle = {
-      top: creepPosition[0],
-      left: creepPosition[1]
+      top: this.state.position[0],
+      left: this.state.position[1],
+      position: 'fixed'
     };
 
     return (
-      React.createElement("div", {style: creepStyle}, 
-        React.createElement("img", {className: "creep-spirit", id: "creep-down-0", style: creepStyle})
+      React.createElement("div", {className: "creep-block", style: creepStyle}, 
+        React.createElement("img", {className: "creep-spirit", id: "creep-down-0"}), 
+        React.createElement("div", {className: "creep-HP"}, this.state.hp)
       )
     );
+  },
+
+  onChange: function() {
+    return this.setState(getStateFromStore());
   }
 
 });
@@ -28676,7 +28704,8 @@ module.exports = keyMirror({
   ONCLICK_START_GAME: null,
   UPDATE_MAP:null,
   ON_KEY_PRESS: null,
-  MOVE_CHAMP: null
+  MOVE_CHAMP: null,
+  CHAMP_ATTACK: null
 });
 
 },{"keymirror":9}],166:[function(require,module,exports){
@@ -28879,6 +28908,37 @@ function getChampHP() {
   return _champHP;
 }
 
+function champAttack() {
+  var affectedTile = []
+
+  switch(_champFaceDirection) {
+    case "up":
+      affectedTile.push(_champTile[0] - 1);
+      affectedTile.push(_champTile[1]);
+      break;
+
+    case "down":
+      affectedTile.push(_champTile[0] + 1);
+      affectedTile.push(_champTile[1]);
+      break;
+
+    case "left":
+      affectedTile.push(_champTile[0]);
+      affectedTile.push(_champTile[1] - 1);
+      break;
+
+    case "right":
+      affectedTile.push(_champTile[0]);
+      affectedTile.push(_champTile[1] + 1);
+      break;
+
+    default:
+      break;
+  }
+
+  var canAttack = MapStore.attackTile(affectedTile);
+}
+
 var ChampStore = assign({}, EventEmitter.prototype, {
   getChampPosition: function() {
     loadChampTile();
@@ -28886,9 +28946,7 @@ var ChampStore = assign({}, EventEmitter.prototype, {
     return _champPosition;
   },
 
-  startChampAnimationLoop: function() {
-    startChampAnimationLoop();
-  },
+  startChampAnimationLoop: startChampAnimationLoop,
 
   getChampHP: getChampHP,
 
@@ -28919,10 +28977,14 @@ GameDispatcher.register(function(payload) {
   switch(action.actionType) {
     case GameConstants.MOVE_CHAMP:
       keyCode = action.keyCode;
-      console.log('trying to move champ', keyCode)
       moveChamp(keyCode);
       ChampStore.emitChange();
       break;
+
+    case GameConstants.CHAMP_ATTACK:
+      champAttack();
+      ChampStore.emitChange();
+    break;
 
     default:
       return true;
@@ -28950,6 +29012,7 @@ var _tileWidth = 50;
 var _charWidth = 32;
 var _animationCounter = 0;
 var _creepFaceDirection = "down";
+var _creepHP = 3;
 
 function loadCreepTile() {
   if(_creepTile === null) _creepTile = MapStore.getCreepInitialTile();
@@ -28976,10 +29039,19 @@ function startCreepAnimationLoop() {
 function kill() {
 
   setTimeout(function() {
-    $('.creep-spirit').remove();
+    $('.creep-block').remove();
   }, 750);
 
-  
+}
+
+function takeDamage(damage) {
+  _creepHP -= damage;
+
+  if(_creepHP <= 0) {
+    kill();
+  }
+
+  CreepStore.emitChange();
 }
 
 var CreepStore = assign({}, EventEmitter.prototype, {
@@ -28988,6 +29060,12 @@ var CreepStore = assign({}, EventEmitter.prototype, {
     loadCreepPosition();
     return _creepPosition;
   },
+
+  getCreepHP: function() {
+    return _creepHP;
+  },
+
+  takeDamage: takeDamage,
 
   startCreepAnimationLoop: function() {
     startCreepAnimationLoop();
@@ -29067,6 +29145,30 @@ function champCollisionHandler(champPosition) {
   return damageToChamp;
 }
 
+function getTileObject(coordinate) {
+  return _map[coordinate[0]][coordinate[1]];
+}
+
+function attackTile(coordinate) {
+  var tileObject = getTileObject(coordinate);
+
+  if(tileObject != 0) {
+
+    if(tileObject == 2) {
+
+      var CreepStore = require('./creepStore');
+
+      CreepStore.takeDamage(1);
+
+      return true;
+
+    }
+
+  }
+
+  return false;
+}
+
 var MapStore = assign({}, EventEmitter.prototype, {
   getMap: function() {
     if (_map === null) {
@@ -29085,6 +29187,8 @@ var MapStore = assign({}, EventEmitter.prototype, {
   },
 
   champCollisionHandler: champCollisionHandler,
+
+  attackTile: attackTile,
 
   //not specific to this game
   emitChange: function() {
@@ -29133,7 +29237,7 @@ GameDispatcher.register(function(payload) {
 
 module.exports = MapStore;
 
-},{"../../map/level-1.json":170,"../constants":165,"../dispatcher":166,"events":2,"jquery":8,"object-assign":10}],170:[function(require,module,exports){
+},{"../../map/level-1.json":170,"../constants":165,"../dispatcher":166,"./creepStore":168,"events":2,"jquery":8,"object-assign":10}],170:[function(require,module,exports){
 module.exports={
   "tiles": [
     [0, 1, 0, 0, 0, 0, 0, 0],

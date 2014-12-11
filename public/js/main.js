@@ -18,12 +18,14 @@ var CreepStore = require('./stores/creepStore');
 var Game = React.createClass({
   onKeyPress: function(e) {
     var keyCode = e.which;
-
+    
     if (keyCode == 119 ||
         keyCode == 115 ||
         keyCode == 97 ||
         keyCode == 100) {
       ChampActionCreators.moveChamp(keyCode);
+    } else if (keyCode == 106) {
+      ChampActionCreators.champAttack();
     }
   },
 

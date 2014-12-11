@@ -152,3 +152,10 @@ img {
   margin-top: -16px;
   margin-left: 12px;
 }
+
+.creep-HP {
+  color: red;
+  z-index: 999;
+  margin-top: -16px;
+  margin-left: 12px;
+}

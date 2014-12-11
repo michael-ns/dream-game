@@ -14,6 +14,7 @@ var _tileWidth = 50;
 var _charWidth = 32;
 var _animationCounter = 0;
 var _creepFaceDirection = "down";
+var _creepHP = 3;
 
 function loadCreepTile() {
   if(_creepTile === null) _creepTile = MapStore.getCreepInitialTile();
@@ -40,10 +41,19 @@ function startCreepAnimationLoop() {
 function kill() {
 
   setTimeout(function() {
-    $('.creep-spirit').remove();
+    $('.creep-block').remove();
   }, 750);
 
-  
+}
+
+function takeDamage(damage) {
+  _creepHP -= damage;
+
+  if(_creepHP <= 0) {
+    kill();
+  }
+
+  CreepStore.emitChange();
 }
 
 var CreepStore = assign({}, EventEmitter.prototype, {
@@ -52,6 +62,12 @@ var CreepStore = assign({}, EventEmitter.prototype, {
     loadCreepPosition();
     return _creepPosition;
   },
+
+  getCreepHP: function() {
+    return _creepHP;
+  },
+
+  takeDamage: takeDamage,
 
   startCreepAnimationLoop: function() {
     startCreepAnimationLoop();

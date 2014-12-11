@@ -26,8 +26,6 @@ var Champ = React.createClass({
       position: 'fixed'
     };
 
-    console.log(this.state)
-
     return (
       <div className="champ-block" style={champStyle}>
         <img className="champ-spirit" id="champ-down-0" />
@@ -36,7 +34,6 @@ var Champ = React.createClass({
     );
   },
   onChange: function() {
-    console.log('states changing')
     return this.setState(getStateFromStore());
   }
 

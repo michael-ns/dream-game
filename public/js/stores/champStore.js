@@ -170,6 +170,37 @@ function getChampHP() {
   return _champHP;
 }
 
+function champAttack() {
+  var affectedTile = []
+
+  switch(_champFaceDirection) {
+    case "up":
+      affectedTile.push(_champTile[0] - 1);
+      affectedTile.push(_champTile[1]);
+      break;
+
+    case "down":
+      affectedTile.push(_champTile[0] + 1);
+      affectedTile.push(_champTile[1]);
+      break;
+
+    case "left":
+      affectedTile.push(_champTile[0]);
+      affectedTile.push(_champTile[1] - 1);
+      break;
+
+    case "right":
+      affectedTile.push(_champTile[0]);
+      affectedTile.push(_champTile[1] + 1);
+      break;
+
+    default:
+      break;
+  }
+
+  var canAttack = MapStore.attackTile(affectedTile);
+}
+
 var ChampStore = assign({}, EventEmitter.prototype, {
   getChampPosition: function() {
     loadChampTile();
@@ -177,9 +208,7 @@ var ChampStore = assign({}, EventEmitter.prototype, {
     return _champPosition;
   },
 
-  startChampAnimationLoop: function() {
-    startChampAnimationLoop();
-  },
+  startChampAnimationLoop: startChampAnimationLoop,
 
   getChampHP: getChampHP,
 
@@ -210,10 +239,14 @@ GameDispatcher.register(function(payload) {
   switch(action.actionType) {
     case GameConstants.MOVE_CHAMP:
       keyCode = action.keyCode;
-      console.log('trying to move champ', keyCode)
       moveChamp(keyCode);
       ChampStore.emitChange();
       break;
+
+    case GameConstants.CHAMP_ATTACK:
+      champAttack();
+      ChampStore.emitChange();
+    break;
 
     default:
       return true;

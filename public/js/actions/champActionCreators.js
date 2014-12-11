@@ -7,5 +7,11 @@ module.exports = {
       actionType: GameConstants.MOVE_CHAMP,
       keyCode: keyCode
     });
+  },
+
+  champAttack: function() {
+    GameDispatcher.handleViewAction({
+      actionType: GameConstants.CHAMP_ATTACK
+    });
   }
 };

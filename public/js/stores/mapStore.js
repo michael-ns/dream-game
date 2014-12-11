@@ -32,6 +32,30 @@ function champCollisionHandler(champPosition) {
   return damageToChamp;
 }
 
+function getTileObject(coordinate) {
+  return _map[coordinate[0]][coordinate[1]];
+}
+
+function attackTile(coordinate) {
+  var tileObject = getTileObject(coordinate);
+
+  if(tileObject != 0) {
+
+    if(tileObject == 2) {
+
+      var CreepStore = require('./creepStore');
+
+      CreepStore.takeDamage(1);
+
+      return true;
+
+    }
+
+  }
+
+  return false;
+}
+
 var MapStore = assign({}, EventEmitter.prototype, {
   getMap: function() {
     if (_map === null) {
@@ -50,6 +74,8 @@ var MapStore = assign({}, EventEmitter.prototype, {
   },
 
   champCollisionHandler: champCollisionHandler,
+
+  attackTile: attackTile,
 
   //not specific to this game
   emitChange: function() {
