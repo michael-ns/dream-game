@@ -19,15 +19,8 @@ var CreepStore = require('./stores/creepStore');
 var Game = React.createClass({displayName: 'Game',
   onKeyPress: function(e) {
     var keyCode = e.which;
-    
-    if (keyCode == 119 ||
-        keyCode == 115 ||
-        keyCode == 97 ||
-        keyCode == 100) {
-      ChampActionCreators.moveChamp(keyCode);
-    } else if (keyCode == 106) {
-      ChampActionCreators.champAttack();
-    }
+
+    ChampActionCreators.handleKeyPress(keyCode);
   },
 
   onClickStartGame: function(e) {
@@ -37,6 +30,10 @@ var Game = React.createClass({displayName: 'Game',
 
     React.renderComponent(
       Creep(), document.getElementById('creep')
+    );
+
+    React.renderComponent(
+      Dashboard(), document.getElementById('dashboard')
     );
 
     ChampStore.startChampAnimationLoop();
@@ -49,7 +46,8 @@ var Game = React.createClass({displayName: 'Game',
         React.createElement("div", {className: "map"}, React.createElement(Map, null)), 
         React.createElement("div", null, React.createElement("button", {className: "start-btn", onClick: this.onClickStartGame}, "Game Start")), 
         React.createElement("div", {id: "champ"}), 
-        React.createElement("div", {id: "creep"})
+        React.createElement("div", {id: "creep"}), 
+        React.createElement("div", {id: "dashboard"})
       )
     )
   }
@@ -28506,16 +28504,10 @@ var GameDispatcher = require('../dispatcher');
 var GameConstants = require('../constants');
 
 module.exports = {
-  moveChamp: function(keyCode) {
+  handleKeyPress: function(keyCode) {
     GameDispatcher.handleViewAction({
-      actionType: GameConstants.MOVE_CHAMP,
+      actionType: GameConstants.HANDLE_KEY_PRESS,
       keyCode: keyCode
-    });
-  },
-
-  champAttack: function() {
-    GameDispatcher.handleViewAction({
-      actionType: GameConstants.CHAMP_ATTACK
     });
   }
 };
@@ -28626,8 +28618,41 @@ var Creep = React.createClass({displayName: 'Creep',
 
 module.exports = Creep;
 },{"../actions/creepActionCreators":158,"../stores/creepStore":168,"react":156}],163:[function(require,module,exports){
-module.exports=require(159)
-},{"c:\\dream-game\\public\\js\\actions\\dashboardActionCreators.js":159}],164:[function(require,module,exports){
+var React = require('react');
+
+var ChampStore = require('../stores/champStore');
+
+function getStateFromStore() {
+  return {
+    champHP: ChampStore.getChampHP()
+  }
+}
+
+var Dashboard = React.createClass({displayName: 'Dashboard',
+  getInitialState: function() {
+    return getStateFromStore();
+  },
+
+  componentDidMount: function() {
+    ChampStore.addChangeListener(this.onChange);
+  },
+
+  render: function() {
+    return (
+      React.createElement("div", {className: "dashboard"}, 
+        React.createElement("p", null, "Champ HP: ", this.state.champHP)
+      )
+    );
+  },
+
+  onChange: function() {
+    return this.setState(getStateFromStore());
+  }
+
+});
+
+module.exports = Dashboard;
+},{"../stores/champStore":167,"react":156}],164:[function(require,module,exports){
 var React = require('react');
 var $ = require('jquery');
 
@@ -28704,8 +28729,7 @@ module.exports = keyMirror({
   ONCLICK_START_GAME: null,
   UPDATE_MAP:null,
   ON_KEY_PRESS: null,
-  MOVE_CHAMP: null,
-  CHAMP_ATTACK: null
+  HANDLE_KEY_PRESS: null
 });
 
 },{"keymirror":9}],166:[function(require,module,exports){
@@ -28753,6 +28777,7 @@ var _charWidth = 32;
 var _animationCounter = 0;
 var _champFaceDirection = "down";
 var _champHP = 5;
+var _canHandleNextKeyPress = true;
 
 function loadChampTile() {
 
@@ -28762,11 +28787,14 @@ function loadChampTile() {
 }
 
 function loadChampPosition() {
-  _champPosition[0] = $('.player').position().top;
-  _champPosition[0] += (_tileWidth - _charWidth) * 0.5;
+  if (_champPosition[0] == 0) {
 
-  _champPosition[1] = $('.player').position().left;
-  _champPosition[1] += (_tileWidth - _charWidth) * 0.5;
+    _champPosition[0] = $('.player').position().top;
+    _champPosition[0] += (_tileWidth - _charWidth) * 0.5;
+
+    _champPosition[1] = $('.player').position().left;
+    _champPosition[1] += (_tileWidth - _charWidth) * 0.5;
+  }
 }
 
 function startChampAnimationLoop() {
@@ -28870,19 +28898,19 @@ function moveChamp(keyCode) {
 
     switch(_champFaceDirection) {
       case "up":
-        moveVector[1] -= 1;
-        break;
-
-      case "down":
-        moveVector[1] += 1;
-        break;
-
-      case "left":
         moveVector[0] -= 1;
         break;
 
-      case "right":
+      case "down":
         moveVector[0] += 1;
+        break;
+
+      case "left":
+        moveVector[1] -= 1;
+        break;
+
+      case "right":
+        moveVector[1] += 1;
         break;
 
       default:
@@ -28891,11 +28919,16 @@ function moveChamp(keyCode) {
 
     //actually move our champ
     $('.champ-block').animate({
-      left : "+=" + (moveVector[0] * _tileWidth).toString(),
-      top: "+=" + (moveVector[1] * _tileWidth).toString()
+      top : "+=" + (moveVector[0] * _tileWidth).toString(),
+      left: "+=" + (moveVector[1] * _tileWidth).toString()
     }, 1000);
 
-    //update champ position
+    setTimeout(function() {
+      _champPosition[0] += (moveVector[0] * _tileWidth);
+      _champPosition[1] += (moveVector[1] * _tileWidth);
+    }, 1000);
+
+    //update champ tile coordinate
     updateChampinTiles();
 
     //handle potential collision with other objects on the game map
@@ -28937,6 +28970,67 @@ function champAttack() {
   }
 
   var canAttack = MapStore.attackTile(affectedTile);
+
+  var attackPosition = getAttackPosition();
+
+  $('.champ-block').after("<img class='fire-ball' src='../img/fire_ball.png' height='20' width='20'>");
+
+  $('.fire-ball').css({top: (attackPosition[0] + 5), left: (attackPosition[1] + 5)});
+
+  setTimeout(function() {
+    $('.fire-ball').remove();
+  }, 750);
+
+  if(canAttack) CreepStore.takeDamage(1);
+}
+
+function getAttackPosition() {
+  var attackPosition = $.extend(true, {}, _champPosition);
+
+  switch(_champFaceDirection) {
+    case "up":
+      attackPosition[0] -= _tileWidth;
+      break;
+
+    case "down":
+      attackPosition[0] += _tileWidth;
+      break;
+
+    case "left":
+      attackPosition[1] -= _tileWidth;
+      break;
+
+    case "right":
+      attackPosition[1] += _tileWidth;
+      break;
+
+    default:
+      break;
+  }
+
+  return attackPosition;
+}
+
+function handleKeyPress(keyCode) {
+
+  if (_canHandleNextKeyPress) {
+
+    if (keyCode == 119 ||
+        keyCode == 115 ||
+        keyCode == 97 ||
+        keyCode == 100) {
+      moveChamp(keyCode);
+    } else if (keyCode == 106) {
+      champAttack();
+    }
+
+    _canHandleNextKeyPress = false;
+
+    setTimeout(function() {
+      _canHandleNextKeyPress = true;
+    }, 1000);
+  }
+
 }
 
 var ChampStore = assign({}, EventEmitter.prototype, {
@@ -28975,16 +29069,11 @@ GameDispatcher.register(function(payload) {
   var action = payload.action;
   
   switch(action.actionType) {
-    case GameConstants.MOVE_CHAMP:
+    case GameConstants.HANDLE_KEY_PRESS:
       keyCode = action.keyCode;
-      moveChamp(keyCode);
+      handleKeyPress(keyCode);
       ChampStore.emitChange();
       break;
-
-    case GameConstants.CHAMP_ATTACK:
-      champAttack();
-      ChampStore.emitChange();
-    break;
 
     default:
       return true;
@@ -29050,6 +29139,8 @@ function takeDamage(damage) {
   if(_creepHP <= 0) {
     kill();
   }
+
+  MapStore.setTile(_creepTile, 0);
 
   CreepStore.emitChange();
 }
@@ -29156,10 +29247,6 @@ function attackTile(coordinate) {
 
     if(tileObject == 2) {
 
-      var CreepStore = require('./creepStore');
-
-      CreepStore.takeDamage(1);
-
       return true;
 
     }
@@ -29167,6 +29254,10 @@ function attackTile(coordinate) {
   }
 
   return false;
+}
+
+function setTile(tile, value) {
+  _map[tile[0]][tile[1]] = value;
 }
 
 var MapStore = assign({}, EventEmitter.prototype, {
@@ -29189,6 +29280,8 @@ var MapStore = assign({}, EventEmitter.prototype, {
   champCollisionHandler: champCollisionHandler,
 
   attackTile: attackTile,
+
+  setTile:setTile,
 
   //not specific to this game
   emitChange: function() {
@@ -29237,7 +29330,7 @@ GameDispatcher.register(function(payload) {
 
 module.exports = MapStore;
 
-},{"../../map/level-1.json":170,"../constants":165,"../dispatcher":166,"./creepStore":168,"events":2,"jquery":8,"object-assign":10}],170:[function(require,module,exports){
+},{"../../map/level-1.json":170,"../constants":165,"../dispatcher":166,"events":2,"jquery":8,"object-assign":10}],170:[function(require,module,exports){
 module.exports={
   "tiles": [
     [0, 1, 0, 0, 0, 0, 0, 0],

@@ -159,3 +159,13 @@ img {
   margin-top: -16px;
   margin-left: 12px;
 }
+
+#dashboard {
+  padding-left: 100px;
+  padding-top: 100px;
+}
+
+.fire-ball {
+  position: fixed;
+  z-index: 999;
+}

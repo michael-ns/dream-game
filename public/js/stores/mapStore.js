@@ -43,10 +43,6 @@ function attackTile(coordinate) {
 
     if(tileObject == 2) {
 
-      var CreepStore = require('./creepStore');
-
-      CreepStore.takeDamage(1);
-
       return true;
 
     }
@@ -54,6 +50,10 @@ function attackTile(coordinate) {
   }
 
   return false;
+}
+
+function setTile(tile, value) {
+  _map[tile[0]][tile[1]] = value;
 }
 
 var MapStore = assign({}, EventEmitter.prototype, {
@@ -76,6 +76,8 @@ var MapStore = assign({}, EventEmitter.prototype, {
   champCollisionHandler: champCollisionHandler,
 
   attackTile: attackTile,
+
+  setTile:setTile,
 
   //not specific to this game
   emitChange: function() {

@@ -53,6 +53,8 @@ function takeDamage(damage) {
     kill();
   }
 
+  MapStore.setTile(_creepTile, 0);
+
   CreepStore.emitChange();
 }
 
