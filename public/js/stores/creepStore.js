@@ -8,24 +8,38 @@ var CHANGE_EVENT = 'change';
 var MapStore = require('../stores/mapStore');
 var MapAcionCreators = require('../actions/mapActionCreators');
 
-var _creepTile = null;
-var _creepPosition = [0, 0];
+var _creepTiles = null;
+var _creepPositions = new Object;
 var _tileWidth = 50;
 var _charWidth = 32;
 var _animationCounter = 0;
 var _creepFaceDirection = "down";
-var _creepHP = 3;
+var _creepHPs = {
+  "two": 3,
+  "three": 4
+};
 
 function loadCreepTile() {
-  if(_creepTile === null) _creepTile = MapStore.getCreepInitialTile();
+  if(_creepTiles === null) _creepTiles = MapStore.getCreepInitialTiles();
 }
 
-function loadCreepPosition() {
-  _creepPosition[0] = $('.creep').position().top;
-  _creepPosition[0] += (_tileWidth - _charWidth) * 0.5;
+function loadCreepPositions() {
+  _creepPositions.two = [];
 
-  _creepPosition[1] = $('.creep').position().left;
-  _creepPosition[1] += (_tileWidth - _charWidth) * 0.5;
+  _creepPositions.two[0] = $('.creep.two').position().top;
+  _creepPositions.two[0] += (_tileWidth - _charWidth) * 0.5;
+
+  _creepPositions.two[1] = $('.creep.two').position().left;
+  _creepPositions.two[1] += (_tileWidth - _charWidth) * 0.5;
+
+  _creepPositions.three = [];
+
+  _creepPositions.three[0] = $('.creep.three').position().top;
+  _creepPositions.three[0] += (_tileWidth - _charWidth) * 0.5;
+
+  _creepPositions.three[1] = $('.creep.three').position().left;
+  _creepPositions.three[1] += (_tileWidth - _charWidth) * 0.5;
+
 }
 
 function startCreepAnimationLoop() {
@@ -38,35 +52,46 @@ function startCreepAnimationLoop() {
   }, 250);
 }
 
-function kill() {
+function kill(creepName) {
 
-  setTimeout(function() {
-    $('.creep-block').remove();
-  }, 750);
+  if(creepName == "two") {
+    setTimeout(function() {
+      $('.creep-block-one').remove();
+    }, 750);
+  }
+
+  if(creepName == "three") {
+    setTimeout(function() {
+      $('.creep-block-two').remove();
+    }, 750);
+  }
 
 }
 
-function takeDamage(damage) {
-  _creepHP -= damage;
+function takeDamage(creepName, damage) {
 
-  if(_creepHP <= 0) {
-    kill();
+  _creepHPs[creepName] -= damage;
+
+  console.log(creepName, damage)
+
+  if(_creepHPs[creepName] <= 0) {
+    kill(creepName);
+    MapStore.setTile(_creepTiles[creepName], 0);
   }
-
-  MapStore.setTile(_creepTile, 0);
 
   CreepStore.emitChange();
 }
 
 var CreepStore = assign({}, EventEmitter.prototype, {
-  getCreepPosition: function() {
+  getCreepPositions: function() {
     loadCreepTile();
-    loadCreepPosition();
-    return _creepPosition;
+    loadCreepPositions();
+
+    return _creepPositions;
   },
 
-  getCreepHP: function() {
-    return _creepHP;
+  getCreepHPs: function() {
+    return _creepHPs;
   },
 
   takeDamage: takeDamage,
@@ -74,8 +99,6 @@ var CreepStore = assign({}, EventEmitter.prototype, {
   startCreepAnimationLoop: function() {
     startCreepAnimationLoop();
   },
-
-  kill: kill,
 
   //not specific to this game
   emitChange: function() {

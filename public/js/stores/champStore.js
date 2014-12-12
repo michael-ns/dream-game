@@ -1,5 +1,6 @@
 var GameDispatcher = require('../dispatcher');
 var EventEmitter = require('events').EventEmitter;
+var ce = require('cloneextend');
 var GameConstants = require('../constants');
 var assign = require('object-assign');
 var $ = require('jquery');
@@ -69,27 +70,42 @@ function setChampFaceDirection(keyCode) {
 }
 
 function canMoveTo() {
-  var canMove = false;
+  var canMove = true;
+
+  var tileWillMoveTo = ce.clone(_champTile);
 
   switch(_champFaceDirection) {
     case "up":
-      if(_champTile[0] != 0) canMove = true;
+      tileWillMoveTo[0] -= 1;
       break;
 
     case "down":
-      if(_champTile[0] != 7) canMove = true;
+      tileWillMoveTo[0] += 1;
       break;
 
     case "left":
-      if(_champTile[1] != 0) canMove = true;
+      tileWillMoveTo[1] -= 1;
       break;
 
     case "right":
-      if(_champTile[1] != 7) canMove = true;
+      tileWillMoveTo[1] += 1;
       break;
 
     default:
       break;
+  }
+
+  //handle board boarder
+  if (tileWillMoveTo[0] > 7 ||
+      tileWillMoveTo[0] < 0 ||
+      tileWillMoveTo[1] > 7 ||
+      tileWillMoveTo[1] < 0) {
+    canMove = false;
+  }
+
+  //handle object
+  if (MapStore.getTileObject(tileWillMoveTo) != 0) {
+    canMove = false;
   }
 
   return canMove;
@@ -118,14 +134,6 @@ function updateChampinTiles() {
       break;
   }
 
-}
-
-function champTakeDamage(damage) {
-  _champHP -= damage;
-
-  if(damage > 0) {
-    CreepStore.kill();
-  }
 }
 
 function moveChamp(keyCode) {
@@ -168,9 +176,6 @@ function moveChamp(keyCode) {
 
     //update champ tile coordinate
     updateChampinTiles();
-
-    //handle potential collision with other objects on the game map
-    champTakeDamage(MapStore.champCollisionHandler(_champTile));
 
   }
 }
@@ -219,11 +224,19 @@ function champAttack() {
     $('.fire-ball').remove();
   }, 750);
 
-  if(canAttack) CreepStore.takeDamage(1);
+  if (MapStore.getTileObject(affectedTile) == 2) {
+    CreepStore.takeDamage("two", 1);
+  }
+
+  if (MapStore.getTileObject(affectedTile) == 3) {
+    console.log('champ will attack three')
+    CreepStore.takeDamage("three", 1);
+  }
+
 }
 
 function getAttackPosition() {
-  var attackPosition = $.extend(true, {}, _champPosition);
+  var attackPosition = ce.clone(_champPosition);
 
   switch(_champFaceDirection) {
     case "up":

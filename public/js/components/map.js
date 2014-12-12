@@ -29,7 +29,11 @@ var Tiles = React.createClass({
         break;
 
       case 2:
-        mapTile = <img width="50" height="50" className="creep" src={'img/creep-tile.png'} />;
+        mapTile = <img width="50" height="50" className="creep two" src={'img/creep-tile.png'} />;
+        break;
+
+      case 3:
+        mapTile = <img width="50" height="50" className="creep three" src={'img/creep-tile.png'} />;
         break;
 
       default:

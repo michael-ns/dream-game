@@ -1,4 +1,5 @@
 var GameDispatcher = require('../dispatcher');
+var ce = require('cloneextend');
 var EventEmitter = require('events').EventEmitter;
 var GameConstants = require('../constants');
 var assign = require('object-assign');
@@ -15,7 +16,7 @@ function loadMap() {
 
 function champCollisionHandler(champPosition) {
 
-  var damageToChamp = 0;
+  var collisionResult = [];
   
   var objectInPosition = _mapTiles.tiles[champPosition[0]][champPosition[1]];
 
@@ -23,13 +24,19 @@ function champCollisionHandler(champPosition) {
 
     if(objectInPosition == 2) {
 
-      damageToChamp = 1;
+      collisionResult.push("two");
+      collisionResult.push(1);
+    }
 
+    if(objectInPosition == 3) {
+
+      collisionResult.push("three");
+      collisionResult.push(1);
     }
 
   }
 
-  return damageToChamp;
+  return collisionResult;
 }
 
 function getTileObject(coordinate) {
@@ -69,8 +76,8 @@ var MapStore = assign({}, EventEmitter.prototype, {
     return _mapTiles.champLocation;
   },
 
-  getCreepInitialTile: function() {
-    return _mapTiles.creepLocation;
+  getCreepInitialTiles: function() {
+    return _mapTiles.creepLocations;
   },
 
   champCollisionHandler: champCollisionHandler,
@@ -78,6 +85,8 @@ var MapStore = assign({}, EventEmitter.prototype, {
   attackTile: attackTile,
 
   setTile:setTile,
+
+  getTileObject: getTileObject,
 
   //not specific to this game
   emitChange: function() {

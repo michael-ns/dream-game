@@ -10,7 +10,8 @@ var CreepActionCreators = require('./actions/creepActionCreators');
 var Map = require('./components/map');
 var Dashboard = require('./components/dashboard');
 var Champ = require('./components/champ');
-var Creep = require('./components/creep');
+var CreepOne = require('./components/creepOne');
+var CreepTwo = require('./components/creepTwo');
 
 var ChampStore = require('./stores/champStore');
 var CreepStore = require('./stores/creepStore');
@@ -28,7 +29,11 @@ var Game = React.createClass({
     );
 
     React.renderComponent(
-      Creep(), document.getElementById('creep')
+      CreepOne(), document.getElementById('creep-one')
+    );
+
+    React.renderComponent(
+      CreepTwo(), document.getElementById('creep-two')
     );
 
     React.renderComponent(
@@ -45,7 +50,8 @@ var Game = React.createClass({
         <div className="map"><Map /></div>
         <div><button className="start-btn" onClick={this.onClickStartGame}>Game Start</button></div>
         <div id="champ"></div>
-        <div id="creep"></div>
+        <div id="creep-one"></div>
+        <div id="creep-two"></div>
         <div id="dashboard"></div> 
       </div>
     )

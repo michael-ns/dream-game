@@ -5,12 +5,12 @@ var CreepAcionCreators = require('../actions/creepActionCreators');
 
 function getStateFromStore() {
   return {
-    position: CreepStore.getCreepPosition(),
-    hp: CreepStore.getCreepHP()
+    position: CreepStore.getCreepPositions().three,
+    hp: CreepStore.getCreepHPs().three
   }
 }
 
-var Creep = React.createClass({
+var CreepTwo = React.createClass({
   getInitialState: function() {
     return getStateFromStore();
   },
@@ -31,7 +31,7 @@ var Creep = React.createClass({
     };
 
     return (
-      <div className="creep-block" style={creepStyle}>
+      <div className="creep-block-two" style={creepStyle}>
         <img className="creep-spirit" id="creep-down-0" />
         <div className="creep-HP">{this.state.hp}</div>
       </div>
@@ -44,4 +44,4 @@ var Creep = React.createClass({
 
 });
 
-module.exports = Creep;
+module.exports = CreepTwo;

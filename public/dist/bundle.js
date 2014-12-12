@@ -11,7 +11,8 @@ var CreepActionCreators = require('./actions/creepActionCreators');
 var Map = require('./components/map');
 var Dashboard = require('./components/dashboard');
 var Champ = require('./components/champ');
-var Creep = require('./components/creep');
+var CreepOne = require('./components/creepOne');
+var CreepTwo = require('./components/creepTwo');
 
 var ChampStore = require('./stores/champStore');
 var CreepStore = require('./stores/creepStore');
@@ -29,7 +30,11 @@ var Game = React.createClass({displayName: 'Game',
     );
 
     React.renderComponent(
-      Creep(), document.getElementById('creep')
+      CreepOne(), document.getElementById('creep-one')
+    );
+
+    React.renderComponent(
+      CreepTwo(), document.getElementById('creep-two')
     );
 
     React.renderComponent(
@@ -46,7 +51,8 @@ var Game = React.createClass({displayName: 'Game',
         React.createElement("div", {className: "map"}, React.createElement(Map, null)), 
         React.createElement("div", null, React.createElement("button", {className: "start-btn", onClick: this.onClickStartGame}, "Game Start")), 
         React.createElement("div", {id: "champ"}), 
-        React.createElement("div", {id: "creep"}), 
+        React.createElement("div", {id: "creep-one"}), 
+        React.createElement("div", {id: "creep-two"}), 
         React.createElement("div", {id: "dashboard"})
       )
     )
@@ -58,7 +64,7 @@ module.exports = Game;
 React.renderComponent(
   Game(), document.getElementById('board')
 );
-},{"./actions/champActionCreators":157,"./actions/creepActionCreators":158,"./actions/dashboardActionCreators":159,"./actions/mapActionCreators":160,"./components/champ":161,"./components/creep":162,"./components/dashboard":163,"./components/map":164,"./stores/champStore":167,"./stores/creepStore":168,"cloneextend":4,"jquery":8,"react":156}],2:[function(require,module,exports){
+},{"./actions/champActionCreators":157,"./actions/creepActionCreators":158,"./actions/dashboardActionCreators":159,"./actions/mapActionCreators":160,"./components/champ":161,"./components/creepOne":162,"./components/creepTwo":163,"./components/dashboard":164,"./components/map":165,"./stores/champStore":168,"./stores/creepStore":169,"cloneextend":4,"jquery":8,"react":156}],2:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -28511,14 +28517,14 @@ module.exports = {
     });
   }
 };
-},{"../constants":165,"../dispatcher":166}],158:[function(require,module,exports){
+},{"../constants":166,"../dispatcher":167}],158:[function(require,module,exports){
 var GameDispatcher = require('../dispatcher');
 var GameConstants = require('../constants');
 
 module.exports = {
 
 };
-},{"../constants":165,"../dispatcher":166}],159:[function(require,module,exports){
+},{"../constants":166,"../dispatcher":167}],159:[function(require,module,exports){
 
 },{}],160:[function(require,module,exports){
 var GameDispatcher = require('../dispatcher');
@@ -28526,7 +28532,7 @@ var GameConstants = require('../constants');
 
 module.exports = {
 };
-},{"../constants":165,"../dispatcher":166}],161:[function(require,module,exports){
+},{"../constants":166,"../dispatcher":167}],161:[function(require,module,exports){
 var React = require('react');
 
 var ChampStore = require('../stores/champStore');
@@ -28569,7 +28575,7 @@ var Champ = React.createClass({displayName: 'Champ',
 });
 
 module.exports = Champ;
-},{"../actions/champActionCreators":157,"../stores/champStore":167,"react":156}],162:[function(require,module,exports){
+},{"../actions/champActionCreators":157,"../stores/champStore":168,"react":156}],162:[function(require,module,exports){
 var React = require('react');
 
 var CreepStore = require('../stores/creepStore');
@@ -28577,12 +28583,12 @@ var CreepAcionCreators = require('../actions/creepActionCreators');
 
 function getStateFromStore() {
   return {
-    position: CreepStore.getCreepPosition(),
-    hp: CreepStore.getCreepHP()
+    position: CreepStore.getCreepPositions().two,
+    hp: CreepStore.getCreepHPs().two
   }
 }
 
-var Creep = React.createClass({displayName: 'Creep',
+var CreepOne = React.createClass({displayName: 'CreepOne',
   getInitialState: function() {
     return getStateFromStore();
   },
@@ -28603,7 +28609,7 @@ var Creep = React.createClass({displayName: 'Creep',
     };
 
     return (
-      React.createElement("div", {className: "creep-block", style: creepStyle}, 
+      React.createElement("div", {className: "creep-block-one", style: creepStyle}, 
         React.createElement("img", {className: "creep-spirit", id: "creep-down-0"}), 
         React.createElement("div", {className: "creep-HP"}, this.state.hp)
       )
@@ -28616,8 +28622,56 @@ var Creep = React.createClass({displayName: 'Creep',
 
 });
 
-module.exports = Creep;
-},{"../actions/creepActionCreators":158,"../stores/creepStore":168,"react":156}],163:[function(require,module,exports){
+module.exports = CreepOne;
+},{"../actions/creepActionCreators":158,"../stores/creepStore":169,"react":156}],163:[function(require,module,exports){
+var React = require('react');
+
+var CreepStore = require('../stores/creepStore');
+var CreepAcionCreators = require('../actions/creepActionCreators');
+
+function getStateFromStore() {
+  return {
+    position: CreepStore.getCreepPositions().three,
+    hp: CreepStore.getCreepHPs().three
+  }
+}
+
+var CreepTwo = React.createClass({displayName: 'CreepTwo',
+  getInitialState: function() {
+    return getStateFromStore();
+  },
+
+  componentDidMount: function() {
+    CreepStore.addChangeListener(this.onChange);
+  },
+
+  componentWillUnmount: function() {
+    CreepStore.removeChangeListener(this.onChange);
+  },
+
+  render: function() {
+    var creepStyle = {
+      top: this.state.position[0],
+      left: this.state.position[1],
+      position: 'fixed'
+    };
+
+    return (
+      React.createElement("div", {className: "creep-block-two", style: creepStyle}, 
+        React.createElement("img", {className: "creep-spirit", id: "creep-down-0"}), 
+        React.createElement("div", {className: "creep-HP"}, this.state.hp)
+      )
+    );
+  },
+
+  onChange: function() {
+    return this.setState(getStateFromStore());
+  }
+
+});
+
+module.exports = CreepTwo;
+},{"../actions/creepActionCreators":158,"../stores/creepStore":169,"react":156}],164:[function(require,module,exports){
 var React = require('react');
 
 var ChampStore = require('../stores/champStore');
@@ -28652,7 +28706,7 @@ var Dashboard = React.createClass({displayName: 'Dashboard',
 });
 
 module.exports = Dashboard;
-},{"../stores/champStore":167,"react":156}],164:[function(require,module,exports){
+},{"../stores/champStore":168,"react":156}],165:[function(require,module,exports){
 var React = require('react');
 var $ = require('jquery');
 
@@ -28684,7 +28738,11 @@ var Tiles = React.createClass({displayName: 'Tiles',
         break;
 
       case 2:
-        mapTile = React.createElement("img", {width: "50", height: "50", className: "creep", src: 'img/creep-tile.png'});
+        mapTile = React.createElement("img", {width: "50", height: "50", className: "creep two", src: 'img/creep-tile.png'});
+        break;
+
+      case 3:
+        mapTile = React.createElement("img", {width: "50", height: "50", className: "creep three", src: 'img/creep-tile.png'});
         break;
 
       default:
@@ -28720,7 +28778,7 @@ var Map = React.createClass({displayName: 'Map',
 });
 
 module.exports = Map;
-},{"../actions/mapActionCreators":160,"../stores/mapStore":169,"jquery":8,"react":156}],165:[function(require,module,exports){
+},{"../actions/mapActionCreators":160,"../stores/mapStore":170,"jquery":8,"react":156}],166:[function(require,module,exports){
 var keyMirror = require('keymirror');
 
 module.exports = keyMirror({
@@ -28732,7 +28790,7 @@ module.exports = keyMirror({
   HANDLE_KEY_PRESS: null
 });
 
-},{"keymirror":9}],166:[function(require,module,exports){
+},{"keymirror":9}],167:[function(require,module,exports){
 /* AppDispatcher
  *
  * A singleton that operates as the central hub for application updates.
@@ -28759,9 +28817,10 @@ var GameDispatcher = assign(new Dispatcher(), {
 
 module.exports = GameDispatcher;
 
-},{"flux":5,"object-assign":10}],167:[function(require,module,exports){
+},{"flux":5,"object-assign":10}],168:[function(require,module,exports){
 var GameDispatcher = require('../dispatcher');
 var EventEmitter = require('events').EventEmitter;
+var ce = require('cloneextend');
 var GameConstants = require('../constants');
 var assign = require('object-assign');
 var $ = require('jquery');
@@ -28831,27 +28890,42 @@ function setChampFaceDirection(keyCode) {
 }
 
 function canMoveTo() {
-  var canMove = false;
+  var canMove = true;
+
+  var tileWillMoveTo = ce.clone(_champTile);
 
   switch(_champFaceDirection) {
     case "up":
-      if(_champTile[0] != 0) canMove = true;
+      tileWillMoveTo[0] -= 1;
       break;
 
     case "down":
-      if(_champTile[0] != 7) canMove = true;
+      tileWillMoveTo[0] += 1;
       break;
 
     case "left":
-      if(_champTile[1] != 0) canMove = true;
+      tileWillMoveTo[1] -= 1;
       break;
 
     case "right":
-      if(_champTile[1] != 7) canMove = true;
+      tileWillMoveTo[1] += 1;
       break;
 
     default:
       break;
+  }
+
+  //handle board boarder
+  if (tileWillMoveTo[0] > 7 ||
+      tileWillMoveTo[0] < 0 ||
+      tileWillMoveTo[1] > 7 ||
+      tileWillMoveTo[1] < 0) {
+    canMove = false;
+  }
+
+  //handle object
+  if (MapStore.getTileObject(tileWillMoveTo) != 0) {
+    canMove = false;
   }
 
   return canMove;
@@ -28880,14 +28954,6 @@ function updateChampinTiles() {
       break;
   }
 
-}
-
-function champTakeDamage(damage) {
-  _champHP -= damage;
-
-  if(damage > 0) {
-    CreepStore.kill();
-  }
 }
 
 function moveChamp(keyCode) {
@@ -28930,9 +28996,6 @@ function moveChamp(keyCode) {
 
     //update champ tile coordinate
     updateChampinTiles();
-
-    //handle potential collision with other objects on the game map
-    champTakeDamage(MapStore.champCollisionHandler(_champTile));
 
   }
 }
@@ -28981,11 +29044,19 @@ function champAttack() {
     $('.fire-ball').remove();
   }, 750);
 
-  if(canAttack) CreepStore.takeDamage(1);
+  if (MapStore.getTileObject(affectedTile) == 2) {
+    CreepStore.takeDamage("two", 1);
+  }
+
+  if (MapStore.getTileObject(affectedTile) == 3) {
+    console.log('champ will attack three')
+    CreepStore.takeDamage("three", 1);
+  }
+
 }
 
 function getAttackPosition() {
-  var attackPosition = $.extend(true, {}, _champPosition);
+  var attackPosition = ce.clone(_champPosition);
 
   switch(_champFaceDirection) {
     case "up":
@@ -29084,7 +29155,7 @@ GameDispatcher.register(function(payload) {
 
 module.exports = ChampStore;
 
-},{"../constants":165,"../dispatcher":166,"./creepStore":168,"./mapStore":169,"events":2,"jquery":8,"object-assign":10}],168:[function(require,module,exports){
+},{"../constants":166,"../dispatcher":167,"./creepStore":169,"./mapStore":170,"cloneextend":4,"events":2,"jquery":8,"object-assign":10}],169:[function(require,module,exports){
 var GameDispatcher = require('../dispatcher');
 var EventEmitter = require('events').EventEmitter;
 var GameConstants = require('../constants');
@@ -29095,24 +29166,38 @@ var CHANGE_EVENT = 'change';
 var MapStore = require('../stores/mapStore');
 var MapAcionCreators = require('../actions/mapActionCreators');
 
-var _creepTile = null;
-var _creepPosition = [0, 0];
+var _creepTiles = null;
+var _creepPositions = new Object;
 var _tileWidth = 50;
 var _charWidth = 32;
 var _animationCounter = 0;
 var _creepFaceDirection = "down";
-var _creepHP = 3;
+var _creepHPs = {
+  "two": 3,
+  "three": 4
+};
 
 function loadCreepTile() {
-  if(_creepTile === null) _creepTile = MapStore.getCreepInitialTile();
+  if(_creepTiles === null) _creepTiles = MapStore.getCreepInitialTiles();
 }
 
-function loadCreepPosition() {
-  _creepPosition[0] = $('.creep').position().top;
-  _creepPosition[0] += (_tileWidth - _charWidth) * 0.5;
+function loadCreepPositions() {
+  _creepPositions.two = [];
 
-  _creepPosition[1] = $('.creep').position().left;
-  _creepPosition[1] += (_tileWidth - _charWidth) * 0.5;
+  _creepPositions.two[0] = $('.creep.two').position().top;
+  _creepPositions.two[0] += (_tileWidth - _charWidth) * 0.5;
+
+  _creepPositions.two[1] = $('.creep.two').position().left;
+  _creepPositions.two[1] += (_tileWidth - _charWidth) * 0.5;
+
+  _creepPositions.three = [];
+
+  _creepPositions.three[0] = $('.creep.three').position().top;
+  _creepPositions.three[0] += (_tileWidth - _charWidth) * 0.5;
+
+  _creepPositions.three[1] = $('.creep.three').position().left;
+  _creepPositions.three[1] += (_tileWidth - _charWidth) * 0.5;
+
 }
 
 function startCreepAnimationLoop() {
@@ -29125,35 +29210,46 @@ function startCreepAnimationLoop() {
   }, 250);
 }
 
-function kill() {
+function kill(creepName) {
 
-  setTimeout(function() {
-    $('.creep-block').remove();
-  }, 750);
+  if(creepName == "two") {
+    setTimeout(function() {
+      $('.creep-block-one').remove();
+    }, 750);
+  }
+
+  if(creepName == "three") {
+    setTimeout(function() {
+      $('.creep-block-two').remove();
+    }, 750);
+  }
 
 }
 
-function takeDamage(damage) {
-  _creepHP -= damage;
+function takeDamage(creepName, damage) {
 
-  if(_creepHP <= 0) {
-    kill();
+  _creepHPs[creepName] -= damage;
+
+  console.log(creepName, damage)
+
+  if(_creepHPs[creepName] <= 0) {
+    kill(creepName);
+    MapStore.setTile(_creepTiles[creepName], 0);
   }
-
-  MapStore.setTile(_creepTile, 0);
 
   CreepStore.emitChange();
 }
 
 var CreepStore = assign({}, EventEmitter.prototype, {
-  getCreepPosition: function() {
+  getCreepPositions: function() {
     loadCreepTile();
-    loadCreepPosition();
-    return _creepPosition;
+    loadCreepPositions();
+
+    return _creepPositions;
   },
 
-  getCreepHP: function() {
-    return _creepHP;
+  getCreepHPs: function() {
+    return _creepHPs;
   },
 
   takeDamage: takeDamage,
@@ -29161,8 +29257,6 @@ var CreepStore = assign({}, EventEmitter.prototype, {
   startCreepAnimationLoop: function() {
     startCreepAnimationLoop();
   },
-
-  kill: kill,
 
   //not specific to this game
   emitChange: function() {
@@ -29201,8 +29295,9 @@ GameDispatcher.register(function(payload) {
 
 module.exports = CreepStore;
 
-},{"../actions/mapActionCreators":160,"../constants":165,"../dispatcher":166,"../stores/mapStore":169,"events":2,"jquery":8,"object-assign":10}],169:[function(require,module,exports){
+},{"../actions/mapActionCreators":160,"../constants":166,"../dispatcher":167,"../stores/mapStore":170,"events":2,"jquery":8,"object-assign":10}],170:[function(require,module,exports){
 var GameDispatcher = require('../dispatcher');
+var ce = require('cloneextend');
 var EventEmitter = require('events').EventEmitter;
 var GameConstants = require('../constants');
 var assign = require('object-assign');
@@ -29219,7 +29314,7 @@ function loadMap() {
 
 function champCollisionHandler(champPosition) {
 
-  var damageToChamp = 0;
+  var collisionResult = [];
   
   var objectInPosition = _mapTiles.tiles[champPosition[0]][champPosition[1]];
 
@@ -29227,13 +29322,19 @@ function champCollisionHandler(champPosition) {
 
     if(objectInPosition == 2) {
 
-      damageToChamp = 1;
+      collisionResult.push("two");
+      collisionResult.push(1);
+    }
 
+    if(objectInPosition == 3) {
+
+      collisionResult.push("three");
+      collisionResult.push(1);
     }
 
   }
 
-  return damageToChamp;
+  return collisionResult;
 }
 
 function getTileObject(coordinate) {
@@ -29273,8 +29374,8 @@ var MapStore = assign({}, EventEmitter.prototype, {
     return _mapTiles.champLocation;
   },
 
-  getCreepInitialTile: function() {
-    return _mapTiles.creepLocation;
+  getCreepInitialTiles: function() {
+    return _mapTiles.creepLocations;
   },
 
   champCollisionHandler: champCollisionHandler,
@@ -29282,6 +29383,8 @@ var MapStore = assign({}, EventEmitter.prototype, {
   attackTile: attackTile,
 
   setTile:setTile,
+
+  getTileObject: getTileObject,
 
   //not specific to this game
   emitChange: function() {
@@ -29330,19 +29433,22 @@ GameDispatcher.register(function(payload) {
 
 module.exports = MapStore;
 
-},{"../../map/level-1.json":170,"../constants":165,"../dispatcher":166,"events":2,"jquery":8,"object-assign":10}],170:[function(require,module,exports){
+},{"../../map/level-1.json":171,"../constants":166,"../dispatcher":167,"cloneextend":4,"events":2,"jquery":8,"object-assign":10}],171:[function(require,module,exports){
 module.exports={
   "tiles": [
     [0, 1, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 2, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 3, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0]
   ],
   "champLocation": [0, 1],
-  "creepLocation": [3, 1]
+  "creepLocations": {
+    "two": [1, 3],
+    "three": [4, 3]
+  }
 }
 },{}]},{},[1]);
