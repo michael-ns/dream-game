@@ -24,16 +24,16 @@ var Tiles = React.createClass({
     var mapTile = <img width="50" height="50" src={'img/empty-tile.png'} />;
 
     switch(this.props.tile) {
-      case 1:
+      case "champ":
         mapTile = <img width="50" height="50" className="player" src={'img/player-tile.png'} />;
         break;
 
-      case 2:
-        mapTile = <img width="50" height="50" className="creep two" src={'img/creep-tile.png'} />;
+      case "creepA":
+        mapTile = <img width="50" height="50" className="creep creepA" src={'img/creep-tile.png'} />;
         break;
 
-      case 3:
-        mapTile = <img width="50" height="50" className="creep three" src={'img/creep-tile.png'} />;
+      case "creepB":
+        mapTile = <img width="50" height="50" className="creep creepB" src={'img/creep-tile.png'} />;
         break;
 
       default:

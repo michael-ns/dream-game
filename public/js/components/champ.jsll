@@ -3,16 +3,11 @@ var React = require('react');
 var ChampStore = require('../stores/champStore');
 var ChampAcionCreators = require('../actions/champActionCreators');
 
-function getStateFromStore() {
-  return {
-    position: ChampStore.getChampPosition(),
-    hp: ChampStore.getChampHP()
-  }
-}
-
 var Champ = React.createClass({
   getInitialState: function() {
-    return getStateFromStore();
+    return {
+      champ: ChampStore.getChamp()
+    };
   },
 
   componentDidMount: function() {
@@ -21,15 +16,15 @@ var Champ = React.createClass({
 
   render: function() {
     var champStyle = {
-      top: this.state.position[0],
-      left: this.state.position[1],
+      top: this.state.champ.position[0],
+      left: this.state.champ.position[1],
       position: 'fixed'
     };
 
     return (
       <div className="champ-block" style={champStyle}>
         <img className="champ-spirit" id="champ-down-0" />
-        <div className="champ-HP">{this.state.hp}</div>
+        <div className="champ-HP">{this.state.champ.hp}</div>
       </div>
     );
   },

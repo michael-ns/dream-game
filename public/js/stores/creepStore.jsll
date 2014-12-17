@@ -8,16 +8,31 @@ var CHANGE_EVENT = 'change';
 var MapStore = require('../stores/mapStore');
 var MapAcionCreators = require('../actions/mapActionCreators');
 
-var _creepTiles = null;
-var _creepPositions = new Object;
+var _creeps = {};
+
 var _tileWidth = 50;
 var _charWidth = 32;
 var _animationCounter = 0;
-var _creepFaceDirection = "down";
-var _creepHPs = {
-  "two": 3,
-  "three": 4
-};
+
+
+function initiateCreeps(creepName, creepObjects) {
+  //load creep details
+  _creeps[creepName] = creepObjects;
+
+  //render creeps
+  var Creep = require('../components/creep');
+
+  _creeps.keys(hash).forEach(function (key) {
+    var current_creep = hash[key];
+
+    $('#dashboard').after('<div id="champ #{key}"></div>');
+
+    React.renderComponent(
+      <Creep creepName={key} />,
+      document.getElementById(key)
+    );
+  })
+}
 
 function loadCreepTile() {
   if(_creepTiles === null) _creepTiles = MapStore.getCreepInitialTiles();
@@ -83,6 +98,9 @@ function takeDamage(creepName, damage) {
 }
 
 var CreepStore = assign({}, EventEmitter.prototype, {
+
+  initiateCreeps: initiateCreeps,
+
   getCreepPositions: function() {
     loadCreepTile();
     loadCreepPositions();

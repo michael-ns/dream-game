@@ -9,14 +9,25 @@ var CHANGE_EVENT = 'change';
 var MapStore = require('./mapStore');
 var CreepStore = require('./creepStore');
 
-var _champTile = null;
-var _champPosition = [0, 0];
+var _champ = null;
 var _tileWidth = 50;
 var _charWidth = 32;
 var _animationCounter = 0;
-var _champFaceDirection = "down";
-var _champHP = 5;
 var _canHandleNextKeyPress = true;
+
+function initiateChamp(champObject) {
+  //load champ details
+  _champ = champObject;
+
+  //render champ
+  $('#dashboard').after('<div id="champ"></div>');
+
+  React.renderComponent(
+    var Champ = require('../components/champ');
+
+    Champ(), document.getElementById('champ')
+  );
+}
 
 function loadChampTile() {
 
@@ -285,6 +296,9 @@ function handleKeyPress(keyCode) {
 }
 
 var ChampStore = assign({}, EventEmitter.prototype, {
+
+  initiateChamp: initiateChamp,
+
   getChampPosition: function() {
     loadChampTile();
     loadChampPosition();
