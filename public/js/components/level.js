@@ -53,12 +53,21 @@ var Tiles = React.createClass({
   }
 });
 
+function getMapStateFromStore() {
+  return {
+    tiles: LevelStore.getMap()
+  };
+}
+
+
 var Map = React.createClass({
 
   getInitialState: function() {
-    return{
-      tiles: LevelStore.getMap()
-    }
+    return getMapStateFromStore();
+  },
+
+  componentDidMount: function() {
+    LevelStore.addChangeListener(this.onChange);
   },
 
   render: function() {
@@ -71,6 +80,10 @@ var Map = React.createClass({
         {row}
       </div>
     )
+  },
+
+  onChange: function() {
+    return this.setState(getMapStateFromStore());
   }
 });
 

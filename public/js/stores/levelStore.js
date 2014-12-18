@@ -63,7 +63,8 @@ function moveTile(currentTile, intendedTile, objectToMove) {
   _map[currentTile[0]][currentTile[1]] = 0;
 
   _map[intendedTile[0]][intendedTile[1]] = objectToMove;
-
+  
+  LevelStore.emitChange();
 }
 
 // function champCollisionHandler(champPosition) {
@@ -147,24 +148,24 @@ var LevelStore = assign({}, EventEmitter.prototype, {
 
   getTileObject: getTileObject,
 
-  // //not specific to this game
-  // emitChange: function() {
-  //   this.emit(CHANGE_EVENT);
-  // },
+  //not specific to this game
+  emitChange: function() {
+    this.emit(CHANGE_EVENT);
+  },
 
-  // /**
-  //  * @param {function} callback
-  //  */
-  // addChangeListener: function(callback) {
-  //   this.on(CHANGE_EVENT, callback);
-  // },
+  /**
+   * @param {function} callback
+   */
+  addChangeListener: function(callback) {
+    this.on(CHANGE_EVENT, callback);
+  },
 
-  // /**
-  //  * @param {function} callback
-  //  */
-  // removeChangeListener: function(callback) {
-  //   this.removeListener(CHANGE_EVENT, callback);
-  // }
+  /**
+   * @param {function} callback
+   */
+  removeChangeListener: function(callback) {
+    this.removeListener(CHANGE_EVENT, callback);
+  }
 });
 
 // Register to handle all updates
