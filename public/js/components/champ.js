@@ -1,12 +1,13 @@
 var React = require('react');
+var $ = require('jquery');
 
 var ChampStore = require('../stores/champStore');
-var ChampAcionCreators = require('../actions/champActionCreators');
+var LevelAcionCreators = require('../actions/levelActionCreators');
 
 var Champ = React.createClass({
   getInitialState: function() {
     return {
-      champ: ChampStore.getChamp()
+      champ: ChampStore.getChamp(this.props.objectName)
     };
   },
 
@@ -15,9 +16,10 @@ var Champ = React.createClass({
   },
 
   render: function() {
+
     var champStyle = {
-      top: this.state.champ.position[0],
-      left: this.state.champ.position[1],
+      top: (this.state.champ.tile[0] * 50) + 59,
+      left: (this.state.champ.tile[1] * 50) + 340,
       position: 'fixed'
     };
 

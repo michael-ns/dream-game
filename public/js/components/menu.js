@@ -1,6 +1,6 @@
 var React = require('react');
 
-var MapStore = require('../stores/mapStore');
+var LevelStore = require('../stores/levelStore');
 var levelList = require('../../map/level-list.json');
 
 var Menu = React.createClass({
@@ -9,7 +9,8 @@ var Menu = React.createClass({
     e.preventDefault();
     var level = this.refs.levelList.getDOMNode().value.trim();
 
-    MapStore.startGame(level);
+    LevelStore.setLevel(level);
+    window.location.href = document.URL + "level";
   },
   
   render: function() {

@@ -6,48 +6,56 @@ var assign = require('object-assign');
 var $ = require('jquery');
 var CHANGE_EVENT = 'change';
 
-//var ChampStore = require('./champStore');
-//var CreepStore = require('./creepStore');
-
-var Map = require('../components/map');
-
 var _level = null;
 var _map = null;
 var _levelObjects = null;
 
-function startGame(level) {
+function setLevel(level) {
 
-  // _level = require('../../map/#{level}.json');
-  // _map = _level.tiles;
-  // _levelObjects = _level.levelObjects;
+  switch(level) {
+    case "level-1":
+      _level = require('../../map/level-1.json');
+      break;
 
-  // //render the map
-  // $('#dashboard').after('<div id="map"></div>');
+    case "level-2":
+      _level = require('../../map/level-2.json');
+      break;
 
-  // React.renderComponent(
-  //   Map(), document.getElementById('map')
-  // );
+    case "level-3":
+      _level = require('../../map/level-3.json');
+      break;
 
-  // //render all game objects
-  // _levelObjects.keys(hash).forEach(function (key) {
-  //   var current_object = hash[key];
+    default:
+      break;
+  }
 
-  //   switch(key) {
-  //     case "champ":
-  //       var Champ = require('../stores/champStore');
-  //       ChampStore.initiateChamp(current_object);
-  //       break;
+  _map = _level.tiles;
+  _levelObjects = _level.levelObjects;
 
-  //     case "creeps":
-  //       var Creeps = require('../stores/creepStore');
-  //       CreepStore.initiateCreeps(key, current_object);
-  //       break;
+  //load all game objects into stories
+  for (var i = 0; i < _levelObjects.length; i++) {
+    
+    switch(Object.keys(_levelObjects[i]).toString()) {
+      case "champ":
+        var ChampStore = require('./champStore');
+        ChampStore.initiateChamp(_levelObjects[i]);
+        break;
 
-  //     default:
-  //       break;
-  //   }
-  // })
+      case "creepA":
+        var CreepStore = require('./creepStore');
+        CreepStore.initiateCreep(_levelObjects[i]);
+        break;
 
+      case "creepB":
+        var CreepStore = require('./creepStore');
+        CreepStore.initiateCreep(_levelObjects[i]);
+        break;
+
+      default:
+        break;
+    }
+
+  }
 }
 
 // function champCollisionHandler(champPosition) {
@@ -99,13 +107,19 @@ function startGame(level) {
 //   _map[tile[0]][tile[1]] = value;
 // }
 
-var MapStore = assign({}, EventEmitter.prototype, {
+var LevelStore = assign({}, EventEmitter.prototype, {
+
+  setLevel: setLevel,
+
+  getLevelObjects: function() {
+    return _levelObjects;
+  },
 
   // startGame: startGame,
 
-  // getMap: function() {
-  //   return _map;
-  // },
+  getMap: function() {
+    return _map;
+  }
 
   // getChampInitialTile: function() {
   //   return _mapTiles.champLocation;
@@ -163,9 +177,9 @@ GameDispatcher.register(function(payload) {
   //     return true;
   // }
 
-  // MapStore.emitChange();
+  // LevelStore.emitChange();
 
   // return true;
 });
 
-module.exports = MapStore;
+module.exports = LevelStore;
