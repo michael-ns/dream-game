@@ -20,7 +20,6 @@ function initiateCreep(creepObject) {
 }
 
 function getCreep(objectName) {
-
   for (var i = 0; i < _creeps.length; i++) {
 
     if(Object.keys(_creeps[i]).toString() == objectName) {
@@ -28,7 +27,16 @@ function getCreep(objectName) {
     }
 
   }
+}
 
+function getTilePosition() {
+  for (var i = 0; i < _creeps.length; i++) {
+
+    var objectPosition = $('.' + Object.keys(_creeps[i]).toString()).position();
+
+    _creeps[i][Object.keys(_creeps[i])].position = [objectPosition.top, objectPosition.left];
+    
+  }
 }
 
 // function loadCreepTile() {
@@ -54,15 +62,15 @@ function getCreep(objectName) {
 
 // }
 
-// function startCreepAnimationLoop() {
-//   setInterval(function () {
-//     if (_animationCounter == 3) _animationCounter = 0;
+function startCreepAnimationLoop() {
+  setInterval(function () {
+    if (_animationCounter == 3) _animationCounter = 0;
 
-//     $('.creep-spirit').attr("id", "creep-" + _creepFaceDirection + "-" + _animationCounter.toString());
+    $('.creep-spirit').attr("id", "creep-down-" + _animationCounter.toString());
 
-//     _animationCounter += 1;
-//   }, 250);
-// }
+    _animationCounter += 1;
+  }, 250);
+}
 
 // function kill(creepName) {
 
@@ -100,6 +108,10 @@ var CreepStore = assign({}, EventEmitter.prototype, {
 
   getCreep: getCreep,
 
+  startCreepAnimationLoop: startCreepAnimationLoop,
+
+  getTilePosition: getTilePosition,
+
   // getCreepPositions: function() {
   //   loadCreepTile();
   //   loadCreepPositions();
@@ -112,10 +124,6 @@ var CreepStore = assign({}, EventEmitter.prototype, {
   // },
 
   // takeDamage: takeDamage,
-
-  // startCreepAnimationLoop: function() {
-  //   startCreepAnimationLoop();
-  // },
 
   //not specific to this game
   emitChange: function() {

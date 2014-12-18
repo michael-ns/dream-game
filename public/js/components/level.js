@@ -4,7 +4,8 @@ var $ = require('jquery');
 var LevelStore = require('../stores/levelStore');
 var ChampStore = require('../stores/champStore');
 var CreepStore = require('../stores/creepStore');
-var LevelAcionCreators = require('../actions/levelActionCreators');
+var LevelActionCreators = require('../actions/levelActionCreators');
+var ChampActionCreators = require('../actions/champActionCreators');
 var Champ = require('./champ');
 var Creep = require('./creep');
 
@@ -29,7 +30,7 @@ var Tiles = React.createClass({
 
     switch(this.props.tile) {
       case "champ":
-        mapTile = <img width="50" height="50" className="player" src={'img/player-tile.png'} />;
+        mapTile = <img width="50" height="50" className="champ" src={'img/player-tile.png'} />;
         break;
 
       case "creepA":
@@ -53,6 +54,7 @@ var Tiles = React.createClass({
 });
 
 var Map = React.createClass({
+
   getInitialState: function() {
     return{
       tiles: LevelStore.getMap()
@@ -124,46 +126,32 @@ var LevelObjects = React.createClass({
         {objects}
       </div>
     )
-
-    // var objectsToRender = null;
-
-    // this.state.LevelObjects.keys(hash).forEach(function (key) {
-    //   var current_object = hash[key];
-
-    //   switch(key) {
-    //     case "champ":
-    //       ChampStore.initiateChamp(current_object);
-    //       objectsToRender
-    //       break;
-
-    //     case "creeps":
-    //       var Creeps = require('../stores/creepStore');
-    //       CreepStore.initiateCreeps(key, current_object);
-    //       break;
-
-    //     default:
-    //       break;
-    //   }
-    // })
-
-
-
-    // return (
-    //   <div className="levelObjects">
-    //     {objectsToRender}
-    //   </div>
-    // )
   }
 
 });
 
 var Level = React.createClass({
 
+  componentDidMount: function() {
+    $('.inputTracking').focus();
+  },
+
+  handleKeyPress: function(e) {
+    var keyCode = e.which;
+
+    ChampActionCreators.handleKeyPress(keyCode);
+  },
+
   render: function() {
     return (
       <div className="level">
+
         <Map />
         <LevelObjects />
+
+        <input type="text" className="inputTracking" value="Input Tracking"
+          onKeyPress={this.handleKeyPress} /><br />
+
       </div>
     )
   }

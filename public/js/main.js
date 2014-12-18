@@ -7,18 +7,21 @@ var DefaultRoute = Router.DefaultRoute;
 
 var Menu = require('./components/menu');
 var Level = require('./components/level');
+var ChampAcionCreators = require('./actions/champActionCreators');
 
 
 var Game = React.createClass({
 
   render: function(){
     return (
-      <div>
+      <div className="wrapper">
         <RouteHandler/>
       </div>
     );
   }
 });
+
+module.exports = Game;
 
 var routes = (
   <Route path="/" handler={Game}>

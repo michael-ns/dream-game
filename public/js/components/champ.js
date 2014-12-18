@@ -4,22 +4,27 @@ var $ = require('jquery');
 var ChampStore = require('../stores/champStore');
 var LevelAcionCreators = require('../actions/levelActionCreators');
 
+function getStateFromStore(objName) {
+  return {
+    champ: ChampStore.getChamp(objName)
+  };
+}
+
 var Champ = React.createClass({
   getInitialState: function() {
-    return {
-      champ: ChampStore.getChamp(this.props.objectName)
-    };
+    return getStateFromStore(this.props.objectName);
   },
 
   componentDidMount: function() {
     ChampStore.addChangeListener(this.onChange);
+    ChampStore.startChampAnimationLoop();
   },
 
   render: function() {
 
     var champStyle = {
       top: (this.state.champ.tile[0] * 50) + 59,
-      left: (this.state.champ.tile[1] * 50) + 340,
+      left: (this.state.champ.tile[1] * 50) + 310,
       position: 'fixed'
     };
 
@@ -30,8 +35,9 @@ var Champ = React.createClass({
       </div>
     );
   },
+
   onChange: function() {
-    return this.setState(getStateFromStore());
+    return this.setState(getStateFromStore(this.props.objectName));
   }
 
 });

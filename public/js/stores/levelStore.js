@@ -6,7 +6,7 @@ var assign = require('object-assign');
 var $ = require('jquery');
 var CHANGE_EVENT = 'change';
 
-var _level = null;
+var _level = require('../../map/level-1.json');
 var _map = null;
 var _levelObjects = null;
 
@@ -58,6 +58,14 @@ function setLevel(level) {
   }
 }
 
+function moveTile(currentTile, intendedTile, objectToMove) {
+
+  _map[currentTile[0]][currentTile[1]] = 0;
+
+  _map[intendedTile[0]][intendedTile[1]] = objectToMove;
+
+}
+
 // function champCollisionHandler(champPosition) {
 
 //   var collisionResult = [];
@@ -83,9 +91,9 @@ function setLevel(level) {
 //   return collisionResult;
 // }
 
-// function getTileObject(coordinate) {
-//   return _map[coordinate[0]][coordinate[1]];
-// }
+function getTileObject(coordinate) {
+  return _map[coordinate[0]][coordinate[1]];
+}
 
 // function attackTile(coordinate) {
 //   var tileObject = getTileObject(coordinate);
@@ -119,7 +127,9 @@ var LevelStore = assign({}, EventEmitter.prototype, {
 
   getMap: function() {
     return _map;
-  }
+  },
+
+  moveTile: moveTile,
 
   // getChampInitialTile: function() {
   //   return _mapTiles.champLocation;
@@ -135,7 +145,7 @@ var LevelStore = assign({}, EventEmitter.prototype, {
 
   // setTile:setTile,
 
-  // getTileObject: getTileObject,
+  getTileObject: getTileObject,
 
   // //not specific to this game
   // emitChange: function() {

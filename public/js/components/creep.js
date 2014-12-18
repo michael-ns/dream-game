@@ -4,15 +4,20 @@ var $ = require('jquery');
 var CreepStore = require('../stores/creepStore');
 var CreepAcionCreators = require('../actions/creepActionCreators');
 
+function getStateFromStore(objName) {
+  return {
+    creep: CreepStore.getCreep(objName)
+  };
+}
+
 var Creep = React.createClass({
   getInitialState: function() {
-    return {
-      creep: CreepStore.getCreep(this.props.objectName)
-    };
+    return getStateFromStore(this.props.objectName);
   },
 
   componentDidMount: function() {
     CreepStore.addChangeListener(this.onChange);
+    CreepStore.startCreepAnimationLoop();
   },
 
   componentWillUnmount: function() {
@@ -23,7 +28,7 @@ var Creep = React.createClass({
 
     var creepStyle = {
       top: (this.state.creep.tile[0] * 50) + 59,
-      left: (this.state.creep.tile[1] * 50) + 340,
+      left: (this.state.creep.tile[1] * 50) + 310,
       position: 'fixed'
     };
 
@@ -36,7 +41,7 @@ var Creep = React.createClass({
   },
 
   onChange: function() {
-    return this.setState(getStateFromStore());
+    return this.setState(getStateFromStore(this.props.objectName));
   }
 
 });

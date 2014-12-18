@@ -8,18 +8,21 @@ var DefaultRoute = Router.DefaultRoute;
 
 var Menu = require('./components/menu');
 var Level = require('./components/level');
+var ChampAcionCreators = require('./actions/champActionCreators');
 
 
 var Game = React.createClass({displayName: 'Game',
 
   render: function(){
     return (
-      React.createElement("div", null, 
+      React.createElement("div", {className: "wrapper"}, 
         React.createElement(RouteHandler, null)
       )
     );
   }
 });
+
+module.exports = Game;
 
 var routes = (
   React.createElement(Route, {path: "/", handler: Game}, 
@@ -31,7 +34,7 @@ var routes = (
 Router.run(routes, function (Handler) {
   React.render(React.createElement(Handler, null), document.getElementById('board'));
 });
-},{"./components/level":209,"./components/menu":210,"react":204,"react-router":24}],2:[function(require,module,exports){
+},{"./actions/champActionCreators":205,"./components/level":210,"./components/menu":211,"react":204,"react-router":24}],2:[function(require,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -33439,37 +33442,54 @@ var GameDispatcher = require('../dispatcher');
 var GameConstants = require('../constants');
 
 module.exports = {
+  handleKeyPress: function(keyCode) {
+    GameDispatcher.handleViewAction({
+      actionType: GameConstants.HANDLE_KEY_PRESS,
+      keyCode: keyCode
+    });
+  }
+};
+},{"../constants":212,"../dispatcher":213}],206:[function(require,module,exports){
+var GameDispatcher = require('../dispatcher');
+var GameConstants = require('../constants');
+
+module.exports = {
 
 };
-},{"../constants":211,"../dispatcher":212}],206:[function(require,module,exports){
+},{"../constants":212,"../dispatcher":213}],207:[function(require,module,exports){
 var GameDispatcher = require('../dispatcher');
 var GameConstants = require('../constants');
 
 module.exports = {
 };
-},{"../constants":211,"../dispatcher":212}],207:[function(require,module,exports){
+},{"../constants":212,"../dispatcher":213}],208:[function(require,module,exports){
 var React = require('react');
 var $ = require('jquery');
 
 var ChampStore = require('../stores/champStore');
 var LevelAcionCreators = require('../actions/levelActionCreators');
 
+function getStateFromStore(objName) {
+  return {
+    champ: ChampStore.getChamp(objName)
+  };
+}
+
 var Champ = React.createClass({displayName: 'Champ',
   getInitialState: function() {
-    return {
-      champ: ChampStore.getChamp(this.props.objectName)
-    };
+    return getStateFromStore(this.props.objectName);
   },
 
   componentDidMount: function() {
     ChampStore.addChangeListener(this.onChange);
+    ChampStore.startChampAnimationLoop();
   },
 
   render: function() {
 
     var champStyle = {
       top: (this.state.champ.tile[0] * 50) + 59,
-      left: (this.state.champ.tile[1] * 50) + 340,
+      left: (this.state.champ.tile[1] * 50) + 310,
       position: 'fixed'
     };
 
@@ -33480,29 +33500,35 @@ var Champ = React.createClass({displayName: 'Champ',
       )
     );
   },
+
   onChange: function() {
-    return this.setState(getStateFromStore());
+    return this.setState(getStateFromStore(this.props.objectName));
   }
 
 });
 
 module.exports = Champ;
-},{"../actions/levelActionCreators":206,"../stores/champStore":213,"jquery":12,"react":204}],208:[function(require,module,exports){
+},{"../actions/levelActionCreators":207,"../stores/champStore":214,"jquery":12,"react":204}],209:[function(require,module,exports){
 var React = require('react');
 var $ = require('jquery');
 
 var CreepStore = require('../stores/creepStore');
 var CreepAcionCreators = require('../actions/creepActionCreators');
 
+function getStateFromStore(objName) {
+  return {
+    creep: CreepStore.getCreep(objName)
+  };
+}
+
 var Creep = React.createClass({displayName: 'Creep',
   getInitialState: function() {
-    return {
-      creep: CreepStore.getCreep(this.props.objectName)
-    };
+    return getStateFromStore(this.props.objectName);
   },
 
   componentDidMount: function() {
     CreepStore.addChangeListener(this.onChange);
+    CreepStore.startCreepAnimationLoop();
   },
 
   componentWillUnmount: function() {
@@ -33513,7 +33539,7 @@ var Creep = React.createClass({displayName: 'Creep',
 
     var creepStyle = {
       top: (this.state.creep.tile[0] * 50) + 59,
-      left: (this.state.creep.tile[1] * 50) + 340,
+      left: (this.state.creep.tile[1] * 50) + 310,
       position: 'fixed'
     };
 
@@ -33526,20 +33552,21 @@ var Creep = React.createClass({displayName: 'Creep',
   },
 
   onChange: function() {
-    return this.setState(getStateFromStore());
+    return this.setState(getStateFromStore(this.props.objectName));
   }
 
 });
 
 module.exports = Creep;
-},{"../actions/creepActionCreators":205,"../stores/creepStore":214,"jquery":12,"react":204}],209:[function(require,module,exports){
+},{"../actions/creepActionCreators":206,"../stores/creepStore":215,"jquery":12,"react":204}],210:[function(require,module,exports){
 var React = require('react');
 var $ = require('jquery');
 
 var LevelStore = require('../stores/levelStore');
 var ChampStore = require('../stores/champStore');
 var CreepStore = require('../stores/creepStore');
-var LevelAcionCreators = require('../actions/levelActionCreators');
+var LevelActionCreators = require('../actions/levelActionCreators');
+var ChampActionCreators = require('../actions/champActionCreators');
 var Champ = require('./champ');
 var Creep = require('./creep');
 
@@ -33564,7 +33591,7 @@ var Tiles = React.createClass({displayName: 'Tiles',
 
     switch(this.props.tile) {
       case "champ":
-        mapTile = React.createElement("img", {width: "50", height: "50", className: "player", src: 'img/player-tile.png'});
+        mapTile = React.createElement("img", {width: "50", height: "50", className: "champ", src: 'img/player-tile.png'});
         break;
 
       case "creepA":
@@ -33588,6 +33615,7 @@ var Tiles = React.createClass({displayName: 'Tiles',
 });
 
 var Map = React.createClass({displayName: 'Map',
+
   getInitialState: function() {
     return{
       tiles: LevelStore.getMap()
@@ -33659,53 +33687,39 @@ var LevelObjects = React.createClass({displayName: 'LevelObjects',
         objects
       )
     )
-
-    // var objectsToRender = null;
-
-    // this.state.LevelObjects.keys(hash).forEach(function (key) {
-    //   var current_object = hash[key];
-
-    //   switch(key) {
-    //     case "champ":
-    //       ChampStore.initiateChamp(current_object);
-    //       objectsToRender
-    //       break;
-
-    //     case "creeps":
-    //       var Creeps = require('../stores/creepStore');
-    //       CreepStore.initiateCreeps(key, current_object);
-    //       break;
-
-    //     default:
-    //       break;
-    //   }
-    // })
-
-
-
-    // return (
-    //   <div className="levelObjects">
-    //     {objectsToRender}
-    //   </div>
-    // )
   }
 
 });
 
 var Level = React.createClass({displayName: 'Level',
 
+  componentDidMount: function() {
+    $('.inputTracking').focus();
+  },
+
+  handleKeyPress: function(e) {
+    var keyCode = e.which;
+
+    ChampActionCreators.handleKeyPress(keyCode);
+  },
+
   render: function() {
     return (
       React.createElement("div", {className: "level"}, 
+
         React.createElement(Map, null), 
-        React.createElement(LevelObjects, null)
+        React.createElement(LevelObjects, null), 
+
+        React.createElement("input", {type: "text", className: "inputTracking", value: "Input Tracking", 
+          onKeyPress: this.handleKeyPress}), React.createElement("br", null)
+
       )
     )
   }
 });
 
 module.exports = Level;
-},{"../actions/levelActionCreators":206,"../stores/champStore":213,"../stores/creepStore":214,"../stores/levelStore":215,"./champ":207,"./creep":208,"jquery":12,"react":204}],210:[function(require,module,exports){
+},{"../actions/champActionCreators":205,"../actions/levelActionCreators":207,"../stores/champStore":214,"../stores/creepStore":215,"../stores/levelStore":216,"./champ":208,"./creep":209,"jquery":12,"react":204}],211:[function(require,module,exports){
 var React = require('react');
 
 var LevelStore = require('../stores/levelStore');
@@ -33739,7 +33753,7 @@ var Menu = React.createClass({displayName: 'Menu',
 });
 
 module.exports = Menu;
-},{"../../map/level-list.json":219,"../stores/levelStore":215,"react":204}],211:[function(require,module,exports){
+},{"../../map/level-list.json":220,"../stores/levelStore":216,"react":204}],212:[function(require,module,exports){
 var keyMirror = require('keymirror');
 
 module.exports = keyMirror({
@@ -33751,7 +33765,7 @@ module.exports = keyMirror({
   HANDLE_KEY_PRESS: null
 });
 
-},{"keymirror":13}],212:[function(require,module,exports){
+},{"keymirror":13}],213:[function(require,module,exports){
 /* AppDispatcher
  *
  * A singleton that operates as the central hub for application updates.
@@ -33778,7 +33792,7 @@ var GameDispatcher = assign(new Dispatcher(), {
 
 module.exports = GameDispatcher;
 
-},{"flux":9,"object-assign":14}],213:[function(require,module,exports){
+},{"flux":9,"object-assign":14}],214:[function(require,module,exports){
 var GameDispatcher = require('../dispatcher');
 var EventEmitter = require('events').EventEmitter;
 var ce = require('cloneextend');
@@ -33795,13 +33809,13 @@ var _tileWidth = 50;
 var _charWidth = 32;
 var _animationCounter = 0;
 var _canHandleNextKeyPress = true;
+var _moveVector = [0, 0];
 
 function initiateChamp(champObject) {
   _champs.push(champObject);
 }
 
 function getChamp(objectName) {
-  
   for (var i = 0; i < _champs.length; i++) {
 
     if(Object.keys(_champs[i]).toString() == objectName) {
@@ -33809,10 +33823,17 @@ function getChamp(objectName) {
     }
 
   }
-
 }
 
+function getTilePosition() {
+  for (var i = 0; i < _champs.length; i++) {
 
+    var objectPosition = $('.' + Object.keys(_champs[i]).toString()).position();
+
+    _champs[i][Object.keys(_champs[i])].position = [objectPosition.top, objectPosition.left];
+
+  }
+}
 
 // function loadChampTile() {
 
@@ -33832,149 +33853,129 @@ function getChamp(objectName) {
 //   }
 // }
 
-// function startChampAnimationLoop() {
-//   setInterval(function () {
-//     if (_animationCounter == 3) _animationCounter = 0;
+function startChampAnimationLoop() {
+  setInterval(function () {
+    if (_animationCounter == 3) _animationCounter = 0;
 
-//     $('.champ-spirit').attr("id", "champ-" + _champFaceDirection + "-" + _animationCounter.toString());
+    $('.champ-spirit').attr("id", "champ-" + _champs[0].champ.faceDirection + "-" + _animationCounter.toString());
 
-//     _animationCounter += 1;
-//   }, 250);
-// }
+    _animationCounter += 1;
+  }, 250);
+}
 
-// function setChampFaceDirection(keyCode) {
-//   switch(keyCode) {
-//     case 119:
-//       _champFaceDirection = "up";
-//       break;
+function setChampFaceDirection(keyCode) {
+  _moveVector = [0, 0];
 
-//     case 115:
-//       _champFaceDirection = "down";
-//       break;
+  switch(keyCode) {
+    case 119:
+      _champs[0].champ.faceDirection = "up";
+      _moveVector[0] = -1;
+      return "up";
+      break;
 
-//     case 97:
-//       _champFaceDirection = "left";
-//       break;
+    case 115:
+      _champs[0].champ.faceDirection = "down";
+      _moveVector[0] = 1;
+      return "down";
+      break;
 
-//     case 100:
-//       _champFaceDirection = "right";
-//       break;
+    case 97:
+      _champs[0].champ.faceDirection = "left";
+      _moveVector[1] = -1;
+      return "left";
+      break;
 
-//     default:
-//       break;
-//   }
-// }
+    case 100:
+      _champs[0].champ.faceDirection = "right";
+      _moveVector[1] = 1;
+      return "right";
+      break;
 
-// function canMoveTo() {
-//   var canMove = true;
+    default:
+      return "down";
+      break;
+  }
+}
 
-//   var tileWillMoveTo = ce.clone(_champTile);
+function canMoveTo(intendedTile) {
+  var canMove = true;
 
-//   switch(_champFaceDirection) {
-//     case "up":
-//       tileWillMoveTo[0] -= 1;
-//       break;
+  //handle board boarder
+  if (intendedTile[0] > 7 ||
+      intendedTile[0] < 0 ||
+      intendedTile[1] > 7 ||
+      intendedTile[1] < 0) {
 
-//     case "down":
-//       tileWillMoveTo[0] += 1;
-//       break;
+    canMove = false;
 
-//     case "left":
-//       tileWillMoveTo[1] -= 1;
-//       break;
+  } else {
 
-//     case "right":
-//       tileWillMoveTo[1] += 1;
-//       break;
+    //handle object
+    if (LevelStore.getTileObject(intendedTile) != 0) {
+      canMove = false;
+    }
 
-//     default:
-//       break;
-//   }
+  }
 
-//   //handle board boarder
-//   if (tileWillMoveTo[0] > 7 ||
-//       tileWillMoveTo[0] < 0 ||
-//       tileWillMoveTo[1] > 7 ||
-//       tileWillMoveTo[1] < 0) {
-//     canMove = false;
-//   }
+  return canMove;
+}
 
-//   //handle object
-//   if (MapStore.getTileObject(tileWillMoveTo) != 0) {
-//     canMove = false;
-//   }
+function updateChampTile(currentTile, intendedTile) {
 
-//   return canMove;
-// }
+  _champs[0].champ.tile = intendedTile;
 
-// function updateChampinTiles() {
+  LevelStore.moveTile(currentTile, intendedTile, Object.keys(_champs[0]).toString());
 
-//   switch(_champFaceDirection) {
-//     case "up":
-//       _champTile[0] -= 1;
-//       break;
+}
 
-//     case "down":
-//       _champTile[0] += 1;
-//       break;
+function getIntendedTile(currentTile, faceDirection) {
 
-//     case "left":
-//       _champTile[1] -= 1;
-//       break;
+  var intendedTile = ce.clone(currentTile);
 
-//     case "right":
-//       _champTile[1] += 1;
-//       break;
+  switch(faceDirection) {
+    case "up":
+      intendedTile[0] -= 1;
+      break;
 
-//     default:
-//       break;
-//   }
+    case "down":
+      intendedTile[0] += 1;
+      break;
 
-// }
+    case "left":
+      intendedTile[1] -= 1;
+      break;
 
-// function moveChamp(keyCode) {
-//   setChampFaceDirection(keyCode);
+    case "right":
+      intendedTile[1] += 1;
+      break;
 
-//   if (canMoveTo()) {
-//     var moveVector = [0, 0];
+    default:
+      break;
+  }
 
-//     switch(_champFaceDirection) {
-//       case "up":
-//         moveVector[0] -= 1;
-//         break;
+  return intendedTile;
+}
 
-//       case "down":
-//         moveVector[0] += 1;
-//         break;
+function moveChamp(keyCode) {
 
-//       case "left":
-//         moveVector[1] -= 1;
-//         break;
+  var faceDirection = setChampFaceDirection(keyCode);
+  var currentTile = _champs[0].champ.tile;
+  var intendedTile = getIntendedTile(currentTile, faceDirection);
 
-//       case "right":
-//         moveVector[1] += 1;
-//         break;
+  if(canMoveTo(intendedTile)) {
 
-//       default:
-//         break;
-//     }
+    //actually move our champ
+    $('.champ-block').animate({
+      top : "+=" + (_moveVector[0] * _tileWidth).toString(),
+      left: "+=" + (_moveVector[1] * _tileWidth).toString()
+    }, 1000);
 
-//     //actually move our champ
-//     $('.champ-block').animate({
-//       top : "+=" + (moveVector[0] * _tileWidth).toString(),
-//       left: "+=" + (moveVector[1] * _tileWidth).toString()
-//     }, 1000);
-
-//     setTimeout(function() {
-//       _champPosition[0] += (moveVector[0] * _tileWidth);
-//       _champPosition[1] += (moveVector[1] * _tileWidth);
-//     }, 1000);
-
-//     //update champ tile coordinate
-//     updateChampinTiles();
-
-//   }
-// }
+    //update champ tile after animation
+    setTimeout(function() {
+      updateChampTile(currentTile, intendedTile);
+    }, 1000);
+  }
+}
 
 // function getChampHP() {
 //   return _champHP;
@@ -34058,27 +34059,28 @@ function getChamp(objectName) {
 //   return attackPosition;
 // }
 
-// function handleKeyPress(keyCode) {
+function handleKeyPress(keyCode) {
 
-//   if (_canHandleNextKeyPress) {
+  if (_canHandleNextKeyPress) {
 
-//     if (keyCode == 119 ||
-//         keyCode == 115 ||
-//         keyCode == 97 ||
-//         keyCode == 100) {
-//       moveChamp(keyCode);
-//     } else if (keyCode == 106) {
-//       champAttack();
-//     }
+    if (keyCode == 119 ||
+        keyCode == 115 ||
+        keyCode == 97 ||
+        keyCode == 100) {
+      moveChamp(keyCode);
+    } else if (keyCode == 106) {
+      //champAttack();
+    }
 
-//     _canHandleNextKeyPress = false;
+    //set key press cool down to 1 second
+    _canHandleNextKeyPress = false;
 
-//     setTimeout(function() {
-//       _canHandleNextKeyPress = true;
-//     }, 1000);
-//   }
+    setTimeout(function() {
+      _canHandleNextKeyPress = true;
+    }, 1000);
+  }
 
-// }
+}
 
 var ChampStore = assign({}, EventEmitter.prototype, {
 
@@ -34086,13 +34088,15 @@ var ChampStore = assign({}, EventEmitter.prototype, {
 
   getChamp: getChamp,
 
+  getTilePosition: getTilePosition,
+
   // getChampPosition: function() {
   //   loadChampTile();
   //   loadChampPosition();
   //   return _champPosition;
   // },
 
-  // startChampAnimationLoop: startChampAnimationLoop,
+  startChampAnimationLoop: startChampAnimationLoop,
 
   // getChampHP: getChampHP,
 
@@ -34118,25 +34122,25 @@ var ChampStore = assign({}, EventEmitter.prototype, {
 
 // Register to handle all updates
 GameDispatcher.register(function(payload) {
-  // var action = payload.action;
+  var action = payload.action;
   
-  // switch(action.actionType) {
-  //   case GameConstants.HANDLE_KEY_PRESS:
-  //     keyCode = action.keyCode;
-  //     handleKeyPress(keyCode);
-  //     ChampStore.emitChange();
-  //     break;
+  switch(action.actionType) {
+    case GameConstants.HANDLE_KEY_PRESS:
+      keyCode = action.keyCode;
+      handleKeyPress(keyCode);
+      ChampStore.emitChange();
+      break;
 
-  //   default:
-  //     return true;
-  // }
+    default:
+      return true;
+  }
 
-  // return true;
+  return true;
 });
 
 module.exports = ChampStore;
 
-},{"../constants":211,"../dispatcher":212,"./creepStore":214,"./levelStore":215,"cloneextend":8,"events":6,"jquery":12,"object-assign":14}],214:[function(require,module,exports){
+},{"../constants":212,"../dispatcher":213,"./creepStore":215,"./levelStore":216,"cloneextend":8,"events":6,"jquery":12,"object-assign":14}],215:[function(require,module,exports){
 var GameDispatcher = require('../dispatcher');
 var EventEmitter = require('events').EventEmitter;
 var GameConstants = require('../constants');
@@ -34159,7 +34163,6 @@ function initiateCreep(creepObject) {
 }
 
 function getCreep(objectName) {
-
   for (var i = 0; i < _creeps.length; i++) {
 
     if(Object.keys(_creeps[i]).toString() == objectName) {
@@ -34167,7 +34170,16 @@ function getCreep(objectName) {
     }
 
   }
+}
 
+function getTilePosition() {
+  for (var i = 0; i < _creeps.length; i++) {
+
+    var objectPosition = $('.' + Object.keys(_creeps[i]).toString()).position();
+
+    _creeps[i][Object.keys(_creeps[i])].position = [objectPosition.top, objectPosition.left];
+    
+  }
 }
 
 // function loadCreepTile() {
@@ -34193,15 +34205,15 @@ function getCreep(objectName) {
 
 // }
 
-// function startCreepAnimationLoop() {
-//   setInterval(function () {
-//     if (_animationCounter == 3) _animationCounter = 0;
+function startCreepAnimationLoop() {
+  setInterval(function () {
+    if (_animationCounter == 3) _animationCounter = 0;
 
-//     $('.creep-spirit').attr("id", "creep-" + _creepFaceDirection + "-" + _animationCounter.toString());
+    $('.creep-spirit').attr("id", "creep-down-" + _animationCounter.toString());
 
-//     _animationCounter += 1;
-//   }, 250);
-// }
+    _animationCounter += 1;
+  }, 250);
+}
 
 // function kill(creepName) {
 
@@ -34239,6 +34251,10 @@ var CreepStore = assign({}, EventEmitter.prototype, {
 
   getCreep: getCreep,
 
+  startCreepAnimationLoop: startCreepAnimationLoop,
+
+  getTilePosition: getTilePosition,
+
   // getCreepPositions: function() {
   //   loadCreepTile();
   //   loadCreepPositions();
@@ -34251,10 +34267,6 @@ var CreepStore = assign({}, EventEmitter.prototype, {
   // },
 
   // takeDamage: takeDamage,
-
-  // startCreepAnimationLoop: function() {
-  //   startCreepAnimationLoop();
-  // },
 
   //not specific to this game
   emitChange: function() {
@@ -34293,7 +34305,7 @@ GameDispatcher.register(function(payload) {
 
 module.exports = CreepStore;
 
-},{"../actions/levelActionCreators":206,"../constants":211,"../dispatcher":212,"../stores/levelStore":215,"events":6,"jquery":12,"object-assign":14}],215:[function(require,module,exports){
+},{"../actions/levelActionCreators":207,"../constants":212,"../dispatcher":213,"../stores/levelStore":216,"events":6,"jquery":12,"object-assign":14}],216:[function(require,module,exports){
 var GameDispatcher = require('../dispatcher');
 var ce = require('cloneextend');
 var EventEmitter = require('events').EventEmitter;
@@ -34302,7 +34314,7 @@ var assign = require('object-assign');
 var $ = require('jquery');
 var CHANGE_EVENT = 'change';
 
-var _level = null;
+var _level = require('../../map/level-1.json');
 var _map = null;
 var _levelObjects = null;
 
@@ -34354,6 +34366,14 @@ function setLevel(level) {
   }
 }
 
+function moveTile(currentTile, intendedTile, objectToMove) {
+
+  _map[currentTile[0]][currentTile[1]] = 0;
+
+  _map[intendedTile[0]][intendedTile[1]] = objectToMove;
+
+}
+
 // function champCollisionHandler(champPosition) {
 
 //   var collisionResult = [];
@@ -34379,9 +34399,9 @@ function setLevel(level) {
 //   return collisionResult;
 // }
 
-// function getTileObject(coordinate) {
-//   return _map[coordinate[0]][coordinate[1]];
-// }
+function getTileObject(coordinate) {
+  return _map[coordinate[0]][coordinate[1]];
+}
 
 // function attackTile(coordinate) {
 //   var tileObject = getTileObject(coordinate);
@@ -34415,7 +34435,9 @@ var LevelStore = assign({}, EventEmitter.prototype, {
 
   getMap: function() {
     return _map;
-  }
+  },
+
+  moveTile: moveTile,
 
   // getChampInitialTile: function() {
   //   return _mapTiles.champLocation;
@@ -34431,7 +34453,7 @@ var LevelStore = assign({}, EventEmitter.prototype, {
 
   // setTile:setTile,
 
-  // getTileObject: getTileObject,
+  getTileObject: getTileObject,
 
   // //not specific to this game
   // emitChange: function() {
@@ -34480,7 +34502,7 @@ GameDispatcher.register(function(payload) {
 
 module.exports = LevelStore;
 
-},{"../../map/level-1.json":216,"../../map/level-2.json":217,"../../map/level-3.json":218,"../constants":211,"../dispatcher":212,"./champStore":213,"./creepStore":214,"cloneextend":8,"events":6,"jquery":12,"object-assign":14}],216:[function(require,module,exports){
+},{"../../map/level-1.json":217,"../../map/level-2.json":218,"../../map/level-3.json":219,"../constants":212,"../dispatcher":213,"./champStore":214,"./creepStore":215,"cloneextend":8,"events":6,"jquery":12,"object-assign":14}],217:[function(require,module,exports){
 module.exports={
   "tiles": [
     [0, "champ", 0, 0, 0, 0, 0, 0],
@@ -34518,7 +34540,7 @@ module.exports={
 }
 
 
-},{}],217:[function(require,module,exports){
+},{}],218:[function(require,module,exports){
 module.exports={
   "tiles": [
     [0, 1, 0, 0, 0, 0, 0, 0],
@@ -34536,9 +34558,9 @@ module.exports={
     "three": [4, 3]
   }
 }
-},{}],218:[function(require,module,exports){
-module.exports=require(217)
-},{"c:\\dream-game\\public\\map\\level-2.json":217}],219:[function(require,module,exports){
+},{}],219:[function(require,module,exports){
+module.exports=require(218)
+},{"c:\\dream-game\\public\\map\\level-2.json":218}],220:[function(require,module,exports){
 module.exports={
   "levelList": [
     "level-1",

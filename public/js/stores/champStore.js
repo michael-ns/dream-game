@@ -14,13 +14,13 @@ var _tileWidth = 50;
 var _charWidth = 32;
 var _animationCounter = 0;
 var _canHandleNextKeyPress = true;
+var _moveVector = [0, 0];
 
 function initiateChamp(champObject) {
   _champs.push(champObject);
 }
 
 function getChamp(objectName) {
-  
   for (var i = 0; i < _champs.length; i++) {
 
     if(Object.keys(_champs[i]).toString() == objectName) {
@@ -28,10 +28,17 @@ function getChamp(objectName) {
     }
 
   }
-
 }
 
+function getTilePosition() {
+  for (var i = 0; i < _champs.length; i++) {
 
+    var objectPosition = $('.' + Object.keys(_champs[i]).toString()).position();
+
+    _champs[i][Object.keys(_champs[i])].position = [objectPosition.top, objectPosition.left];
+
+  }
+}
 
 // function loadChampTile() {
 
@@ -51,149 +58,129 @@ function getChamp(objectName) {
 //   }
 // }
 
-// function startChampAnimationLoop() {
-//   setInterval(function () {
-//     if (_animationCounter == 3) _animationCounter = 0;
+function startChampAnimationLoop() {
+  setInterval(function () {
+    if (_animationCounter == 3) _animationCounter = 0;
 
-//     $('.champ-spirit').attr("id", "champ-" + _champFaceDirection + "-" + _animationCounter.toString());
+    $('.champ-spirit').attr("id", "champ-" + _champs[0].champ.faceDirection + "-" + _animationCounter.toString());
 
-//     _animationCounter += 1;
-//   }, 250);
-// }
+    _animationCounter += 1;
+  }, 250);
+}
 
-// function setChampFaceDirection(keyCode) {
-//   switch(keyCode) {
-//     case 119:
-//       _champFaceDirection = "up";
-//       break;
+function setChampFaceDirection(keyCode) {
+  _moveVector = [0, 0];
 
-//     case 115:
-//       _champFaceDirection = "down";
-//       break;
+  switch(keyCode) {
+    case 119:
+      _champs[0].champ.faceDirection = "up";
+      _moveVector[0] = -1;
+      return "up";
+      break;
 
-//     case 97:
-//       _champFaceDirection = "left";
-//       break;
+    case 115:
+      _champs[0].champ.faceDirection = "down";
+      _moveVector[0] = 1;
+      return "down";
+      break;
 
-//     case 100:
-//       _champFaceDirection = "right";
-//       break;
+    case 97:
+      _champs[0].champ.faceDirection = "left";
+      _moveVector[1] = -1;
+      return "left";
+      break;
 
-//     default:
-//       break;
-//   }
-// }
+    case 100:
+      _champs[0].champ.faceDirection = "right";
+      _moveVector[1] = 1;
+      return "right";
+      break;
 
-// function canMoveTo() {
-//   var canMove = true;
+    default:
+      return "down";
+      break;
+  }
+}
 
-//   var tileWillMoveTo = ce.clone(_champTile);
+function canMoveTo(intendedTile) {
+  var canMove = true;
 
-//   switch(_champFaceDirection) {
-//     case "up":
-//       tileWillMoveTo[0] -= 1;
-//       break;
+  //handle board boarder
+  if (intendedTile[0] > 7 ||
+      intendedTile[0] < 0 ||
+      intendedTile[1] > 7 ||
+      intendedTile[1] < 0) {
 
-//     case "down":
-//       tileWillMoveTo[0] += 1;
-//       break;
+    canMove = false;
 
-//     case "left":
-//       tileWillMoveTo[1] -= 1;
-//       break;
+  } else {
 
-//     case "right":
-//       tileWillMoveTo[1] += 1;
-//       break;
+    //handle object
+    if (LevelStore.getTileObject(intendedTile) != 0) {
+      canMove = false;
+    }
 
-//     default:
-//       break;
-//   }
+  }
 
-//   //handle board boarder
-//   if (tileWillMoveTo[0] > 7 ||
-//       tileWillMoveTo[0] < 0 ||
-//       tileWillMoveTo[1] > 7 ||
-//       tileWillMoveTo[1] < 0) {
-//     canMove = false;
-//   }
+  return canMove;
+}
 
-//   //handle object
-//   if (MapStore.getTileObject(tileWillMoveTo) != 0) {
-//     canMove = false;
-//   }
+function updateChampTile(currentTile, intendedTile) {
 
-//   return canMove;
-// }
+  _champs[0].champ.tile = intendedTile;
 
-// function updateChampinTiles() {
+  LevelStore.moveTile(currentTile, intendedTile, Object.keys(_champs[0]).toString());
 
-//   switch(_champFaceDirection) {
-//     case "up":
-//       _champTile[0] -= 1;
-//       break;
+}
 
-//     case "down":
-//       _champTile[0] += 1;
-//       break;
+function getIntendedTile(currentTile, faceDirection) {
 
-//     case "left":
-//       _champTile[1] -= 1;
-//       break;
+  var intendedTile = ce.clone(currentTile);
 
-//     case "right":
-//       _champTile[1] += 1;
-//       break;
+  switch(faceDirection) {
+    case "up":
+      intendedTile[0] -= 1;
+      break;
 
-//     default:
-//       break;
-//   }
+    case "down":
+      intendedTile[0] += 1;
+      break;
 
-// }
+    case "left":
+      intendedTile[1] -= 1;
+      break;
 
-// function moveChamp(keyCode) {
-//   setChampFaceDirection(keyCode);
+    case "right":
+      intendedTile[1] += 1;
+      break;
 
-//   if (canMoveTo()) {
-//     var moveVector = [0, 0];
+    default:
+      break;
+  }
 
-//     switch(_champFaceDirection) {
-//       case "up":
-//         moveVector[0] -= 1;
-//         break;
+  return intendedTile;
+}
 
-//       case "down":
-//         moveVector[0] += 1;
-//         break;
+function moveChamp(keyCode) {
 
-//       case "left":
-//         moveVector[1] -= 1;
-//         break;
+  var faceDirection = setChampFaceDirection(keyCode);
+  var currentTile = _champs[0].champ.tile;
+  var intendedTile = getIntendedTile(currentTile, faceDirection);
 
-//       case "right":
-//         moveVector[1] += 1;
-//         break;
+  if(canMoveTo(intendedTile)) {
 
-//       default:
-//         break;
-//     }
+    //actually move our champ
+    $('.champ-block').animate({
+      top : "+=" + (_moveVector[0] * _tileWidth).toString(),
+      left: "+=" + (_moveVector[1] * _tileWidth).toString()
+    }, 1000);
 
-//     //actually move our champ
-//     $('.champ-block').animate({
-//       top : "+=" + (moveVector[0] * _tileWidth).toString(),
-//       left: "+=" + (moveVector[1] * _tileWidth).toString()
-//     }, 1000);
-
-//     setTimeout(function() {
-//       _champPosition[0] += (moveVector[0] * _tileWidth);
-//       _champPosition[1] += (moveVector[1] * _tileWidth);
-//     }, 1000);
-
-//     //update champ tile coordinate
-//     updateChampinTiles();
-
-//   }
-// }
+    //update champ tile after animation
+    setTimeout(function() {
+      updateChampTile(currentTile, intendedTile);
+    }, 1000);
+  }
+}
 
 // function getChampHP() {
 //   return _champHP;
@@ -277,27 +264,28 @@ function getChamp(objectName) {
 //   return attackPosition;
 // }
 
-// function handleKeyPress(keyCode) {
+function handleKeyPress(keyCode) {
 
-//   if (_canHandleNextKeyPress) {
+  if (_canHandleNextKeyPress) {
 
-//     if (keyCode == 119 ||
-//         keyCode == 115 ||
-//         keyCode == 97 ||
-//         keyCode == 100) {
-//       moveChamp(keyCode);
-//     } else if (keyCode == 106) {
-//       champAttack();
-//     }
+    if (keyCode == 119 ||
+        keyCode == 115 ||
+        keyCode == 97 ||
+        keyCode == 100) {
+      moveChamp(keyCode);
+    } else if (keyCode == 106) {
+      //champAttack();
+    }
 
-//     _canHandleNextKeyPress = false;
+    //set key press cool down to 1 second
+    _canHandleNextKeyPress = false;
 
-//     setTimeout(function() {
-//       _canHandleNextKeyPress = true;
-//     }, 1000);
-//   }
+    setTimeout(function() {
+      _canHandleNextKeyPress = true;
+    }, 1000);
+  }
 
-// }
+}
 
 var ChampStore = assign({}, EventEmitter.prototype, {
 
@@ -305,13 +293,15 @@ var ChampStore = assign({}, EventEmitter.prototype, {
 
   getChamp: getChamp,
 
+  getTilePosition: getTilePosition,
+
   // getChampPosition: function() {
   //   loadChampTile();
   //   loadChampPosition();
   //   return _champPosition;
   // },
 
-  // startChampAnimationLoop: startChampAnimationLoop,
+  startChampAnimationLoop: startChampAnimationLoop,
 
   // getChampHP: getChampHP,
 
@@ -337,20 +327,20 @@ var ChampStore = assign({}, EventEmitter.prototype, {
 
 // Register to handle all updates
 GameDispatcher.register(function(payload) {
-  // var action = payload.action;
+  var action = payload.action;
   
-  // switch(action.actionType) {
-  //   case GameConstants.HANDLE_KEY_PRESS:
-  //     keyCode = action.keyCode;
-  //     handleKeyPress(keyCode);
-  //     ChampStore.emitChange();
-  //     break;
+  switch(action.actionType) {
+    case GameConstants.HANDLE_KEY_PRESS:
+      keyCode = action.keyCode;
+      handleKeyPress(keyCode);
+      ChampStore.emitChange();
+      break;
 
-  //   default:
-  //     return true;
-  // }
+    default:
+      return true;
+  }
 
-  // return true;
+  return true;
 });
 
 module.exports = ChampStore;
