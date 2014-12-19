@@ -8,6 +8,7 @@ var CHANGE_EVENT = 'change';
 
 var LevelStore = require('./levelStore');
 var CreepStore = require('./creepStore');
+var DashboardStore = require('./dashboardStore');
 
 var _champs = [];
 var _tileWidth = 50;
@@ -15,9 +16,22 @@ var _charWidth = 32;
 var _animationCounter = 0;
 var _canHandleNextKeyPress = true;
 var _moveVector = [0, 0];
+var _maxStamina = null;
+var _currentStamina = null;
 
 function initiateChamp(champObject) {
   _champs.push(champObject);
+
+  //set champ stamina
+  _maxStamina = champObject.champ.stamina;
+  _currentStamina = _maxStamina;
+
+  //push stamina data to the dashboard
+  updateDashboardStamina();
+}
+
+function updateDashboardStamina() {
+  DashboardStore.setChampStamina(_currentStamina, _maxStamina);
 }
 
 function getChamp(objectName) {
@@ -161,13 +175,22 @@ function getIntendedTile(currentTile, faceDirection) {
   return intendedTile;
 }
 
+function isThereEnoughStamina(value) {
+  if(_currentStamina < value) {
+    DashboardStore.setMsg("Insufficient Stamina");
+    return false;
+  } else {
+    return true;
+  }
+}
+
 function moveChamp(keyCode) {
 
   var faceDirection = setChampFaceDirection(keyCode);
   var currentTile = _champs[0].champ.tile;
   var intendedTile = getIntendedTile(currentTile, faceDirection);
 
-  if(canMoveTo(intendedTile)) {
+  if(canMoveTo(intendedTile) && isThereEnoughStamina(1)) {
 
     //actually move our champ
     $('.champ-block').animate({
@@ -178,13 +201,11 @@ function moveChamp(keyCode) {
     //update champ tile after animation
     setTimeout(function() {
       updateChampTile(currentTile, intendedTile);
+      _currentStamina -= 1;
+      updateDashboardStamina();
     }, 1000);
   }
 }
-
-// function getChampHP() {
-//   return _champHP;
-// }
 
 function champAttack() {
   var affectedTile = ce.clone(_champs[0].champ.tile);
@@ -214,16 +235,19 @@ function champAttack() {
 
   var attackPosition = getAttackPosition();
 
-  $('.champ-block').after("<img class='fire-ball' src='../img/fire_ball.png' height='20' width='20'>");
+  if(canAttack && isThereEnoughStamina(2)) {
 
-  $('.fire-ball').css({top: (attackPosition[0] + 5), left: (attackPosition[1] + 5)});
+    $('.champ-block').after("<img class='fire-ball' src='../img/fire_ball.png' height='20' width='20'>");
 
-  setTimeout(function() {
-    $('.fire-ball').remove();
-  }, 750);
+    $('.fire-ball').css({top: (attackPosition[0] + 5), left: (attackPosition[1] + 5)});
 
-  if(canAttack) {
+    setTimeout(function() {
+      $('.fire-ball').remove();
+    }, 750);
+
     CreepStore.settleDamage(LevelStore.getTileObject(affectedTile), 1);
+    _currentStamina -= 2;
+    updateDashboardStamina();
   }
 }
 

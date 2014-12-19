@@ -8,6 +8,7 @@ var LevelActionCreators = require('../actions/levelActionCreators');
 var ChampActionCreators = require('../actions/champActionCreators');
 var Champ = require('./champ');
 var Creep = require('./creep');
+var Dashboard = require('./dashboard');
 
 var Row = React.createClass({
 
@@ -160,10 +161,12 @@ var Level = React.createClass({
       <div className="level">
 
         <Map />
-        <LevelObjects />
+        <LevelObjects /><br />
 
         <input type="text" className="inputTracking" value="Input Tracking"
-          onKeyPress={this.handleKeyPress} /><br />
+          onKeyPress={this.handleKeyPress} /><br /><br />
+
+        <Dashboard />
 
       </div>
     )

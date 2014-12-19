@@ -14,7 +14,8 @@
         "champ": {
             "tile": [0, 1],
             "faceDirection": "down",
-            "hp": 5
+            "hp": 5,
+            "stamina": 5
         }
     },
     {
