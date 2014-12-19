@@ -96,25 +96,22 @@ function getTileObject(coordinate) {
   return _map[coordinate[0]][coordinate[1]];
 }
 
-// function attackTile(coordinate) {
-//   var tileObject = getTileObject(coordinate);
+function attackTile(coordinate) {
+  var tileObject = getTileObject(coordinate);
 
-//   if(tileObject != 0) {
+  console.log("tile: ", coordinate, " object: ", tileObject)
 
-//     if(tileObject == 2) {
+  if(tileObject != 0) {
+    if(tileObject == "creepA" || tileObject == "creepB") return true;
+  }
 
-//       return true;
+  return false;
+}
 
-//     }
-
-//   }
-
-//   return false;
-// }
-
-// function setTile(tile, value) {
-//   _map[tile[0]][tile[1]] = value;
-// }
+function setTile(tile, value) {
+  _map[tile[0]][tile[1]] = value;
+  LevelStore.emitChange();
+}
 
 var LevelStore = assign({}, EventEmitter.prototype, {
 
@@ -142,9 +139,9 @@ var LevelStore = assign({}, EventEmitter.prototype, {
 
   // champCollisionHandler: champCollisionHandler,
 
-  // attackTile: attackTile,
+  attackTile: attackTile,
 
-  // setTile:setTile,
+  setTile:setTile,
 
   getTileObject: getTileObject,
 

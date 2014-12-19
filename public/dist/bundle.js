@@ -33536,6 +33536,8 @@ var Creep = React.createClass({displayName: 'Creep',
   },
 
   render: function() {
+    
+    var creepClass = "creep-block " + this.props.objectName;
 
     var creepStyle = {
       top: (this.state.creep.tile[0] * 50) + 59,
@@ -33544,7 +33546,7 @@ var Creep = React.createClass({displayName: 'Creep',
     };
 
     return (
-      React.createElement("div", {className: "creep-block ", style: creepStyle}, 
+      React.createElement("div", {className: creepClass, style: creepStyle}, 
         React.createElement("img", {className: "creep-spirit", id: "creep-down-0"}), 
         React.createElement("div", {className: "creep-HP"}, this.state.creep.hp)
       )
@@ -33994,83 +33996,76 @@ function moveChamp(keyCode) {
 //   return _champHP;
 // }
 
-// function champAttack() {
-//   var affectedTile = []
+function champAttack() {
+  var affectedTile = ce.clone(_champs[0].champ.tile);
 
-//   switch(_champFaceDirection) {
-//     case "up":
-//       affectedTile.push(_champTile[0] - 1);
-//       affectedTile.push(_champTile[1]);
-//       break;
+  switch(_champs[0].champ.faceDirection) {
+    case "up":
+      affectedTile[0] -= 1;
+      break;
 
-//     case "down":
-//       affectedTile.push(_champTile[0] + 1);
-//       affectedTile.push(_champTile[1]);
-//       break;
+    case "down":
+      affectedTile[0] += 1;
+      break;
 
-//     case "left":
-//       affectedTile.push(_champTile[0]);
-//       affectedTile.push(_champTile[1] - 1);
-//       break;
+    case "left":
+      affectedTile[1] -= 1;
+      break;
 
-//     case "right":
-//       affectedTile.push(_champTile[0]);
-//       affectedTile.push(_champTile[1] + 1);
-//       break;
+    case "right":
+      affectedTile[1] += 1;
+      break;
 
-//     default:
-//       break;
-//   }
+    default:
+      break;
+  }
 
-//   var canAttack = MapStore.attackTile(affectedTile);
+  var canAttack = LevelStore.attackTile(affectedTile);
 
-//   var attackPosition = getAttackPosition();
+  var attackPosition = getAttackPosition();
 
-//   $('.champ-block').after("<img class='fire-ball' src='../img/fire_ball.png' height='20' width='20'>");
+  $('.champ-block').after("<img class='fire-ball' src='../img/fire_ball.png' height='20' width='20'>");
 
-//   $('.fire-ball').css({top: (attackPosition[0] + 5), left: (attackPosition[1] + 5)});
+  $('.fire-ball').css({top: (attackPosition[0] + 5), left: (attackPosition[1] + 5)});
 
-//   setTimeout(function() {
-//     $('.fire-ball').remove();
-//   }, 750);
+  setTimeout(function() {
+    $('.fire-ball').remove();
+  }, 750);
 
-//   if (MapStore.getTileObject(affectedTile) == 2) {
-//     CreepStore.takeDamage("two", 1);
-//   }
+  if(canAttack) {
+    CreepStore.settleDamage(LevelStore.getTileObject(affectedTile), 1);
+  }
+}
 
-//   if (MapStore.getTileObject(affectedTile) == 3) {
-//     console.log('champ will attack three')
-//     CreepStore.takeDamage("three", 1);
-//   }
+function getAttackPosition() {
+  var attackPosition = [
+    $('.champ-block').position().top,
+    $('.champ-block').position().left
+  ];
 
-// }
+  switch(_champs[0].champ.faceDirection) {
+    case "up":
+      attackPosition[0] -= _tileWidth;
+      break;
 
-// function getAttackPosition() {
-//   var attackPosition = ce.clone(_champPosition);
+    case "down":
+      attackPosition[0] += _tileWidth;
+      break;
 
-//   switch(_champFaceDirection) {
-//     case "up":
-//       attackPosition[0] -= _tileWidth;
-//       break;
+    case "left":
+      attackPosition[1] -= _tileWidth;
+      break;
 
-//     case "down":
-//       attackPosition[0] += _tileWidth;
-//       break;
+    case "right":
+      attackPosition[1] += _tileWidth;
+      break;
 
-//     case "left":
-//       attackPosition[1] -= _tileWidth;
-//       break;
+    default:
+      break;
+  }
 
-//     case "right":
-//       attackPosition[1] += _tileWidth;
-//       break;
-
-//     default:
-//       break;
-//   }
-
-//   return attackPosition;
-// }
+  return attackPosition;
+}
 
 function handleKeyPress(keyCode) {
 
@@ -34082,7 +34077,7 @@ function handleKeyPress(keyCode) {
         keyCode == 100) {
       moveChamp(keyCode);
     } else if (keyCode == 106) {
-      //champAttack();
+      champAttack();
     }
 
     //set key press cool down to 1 second
@@ -34176,6 +34171,7 @@ function initiateCreep(creepObject) {
 }
 
 function getCreep(objectName) {
+
   for (var i = 0; i < _creeps.length; i++) {
 
     if(Object.keys(_creeps[i]).toString() == objectName) {
@@ -34228,35 +34224,43 @@ function startCreepAnimationLoop() {
   }, 250);
 }
 
-// function kill(creepName) {
+function kill(creepName) {
 
-//   if(creepName == "two") {
-//     setTimeout(function() {
-//       $('.creep-block-one').remove();
-//     }, 750);
-//   }
+  setTimeout(function() {
+    $('.creep-block.' + creepName).remove();
+  }, 750);
 
-//   if(creepName == "three") {
-//     setTimeout(function() {
-//       $('.creep-block-two').remove();
-//     }, 750);
-//   }
+  for (var i = 0; i < _creeps.length; i++) {
 
-// }
+    if(Object.keys(_creeps[i]).toString() == creepName) {
 
-// function takeDamage(creepName, damage) {
+      LevelStore.setTile(_creeps[i][creepName].tile, 0);
 
-//   _creepHPs[creepName] -= damage;
+      CreepStore.emitChange();
+      break;
+    }
 
-//   console.log(creepName, damage)
+  }
 
-//   if(_creepHPs[creepName] <= 0) {
-//     kill(creepName);
-//     MapStore.setTile(_creepTiles[creepName], 0);
-//   }
+}
 
-//   CreepStore.emitChange();
-// }
+function settleDamage(creepName, damage) {
+
+  for (var i = 0; i < _creeps.length; i++) {
+
+    if(Object.keys(_creeps[i]).toString() == creepName) {
+
+      _creeps[i][creepName].hp -= damage;
+
+      if(_creeps[i][creepName].hp <= 0) kill(creepName);
+
+      CreepStore.emitChange();
+      break;
+    }
+
+  }
+
+}
 
 var CreepStore = assign({}, EventEmitter.prototype, {
 
@@ -34267,6 +34271,8 @@ var CreepStore = assign({}, EventEmitter.prototype, {
   startCreepAnimationLoop: startCreepAnimationLoop,
 
   getTilePosition: getTilePosition,
+
+  settleDamage: settleDamage,
 
   // getCreepPositions: function() {
   //   loadCreepTile();
@@ -34417,25 +34423,22 @@ function getTileObject(coordinate) {
   return _map[coordinate[0]][coordinate[1]];
 }
 
-// function attackTile(coordinate) {
-//   var tileObject = getTileObject(coordinate);
+function attackTile(coordinate) {
+  var tileObject = getTileObject(coordinate);
 
-//   if(tileObject != 0) {
+  console.log("tile: ", coordinate, " object: ", tileObject)
 
-//     if(tileObject == 2) {
+  if(tileObject != 0) {
+    if(tileObject == "creepA" || tileObject == "creepB") return true;
+  }
 
-//       return true;
+  return false;
+}
 
-//     }
-
-//   }
-
-//   return false;
-// }
-
-// function setTile(tile, value) {
-//   _map[tile[0]][tile[1]] = value;
-// }
+function setTile(tile, value) {
+  _map[tile[0]][tile[1]] = value;
+  LevelStore.emitChange();
+}
 
 var LevelStore = assign({}, EventEmitter.prototype, {
 
@@ -34463,9 +34466,9 @@ var LevelStore = assign({}, EventEmitter.prototype, {
 
   // champCollisionHandler: champCollisionHandler,
 
-  // attackTile: attackTile,
+  attackTile: attackTile,
 
-  // setTile:setTile,
+  setTile:setTile,
 
   getTileObject: getTileObject,
 

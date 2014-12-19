@@ -186,83 +186,76 @@ function moveChamp(keyCode) {
 //   return _champHP;
 // }
 
-// function champAttack() {
-//   var affectedTile = []
+function champAttack() {
+  var affectedTile = ce.clone(_champs[0].champ.tile);
 
-//   switch(_champFaceDirection) {
-//     case "up":
-//       affectedTile.push(_champTile[0] - 1);
-//       affectedTile.push(_champTile[1]);
-//       break;
+  switch(_champs[0].champ.faceDirection) {
+    case "up":
+      affectedTile[0] -= 1;
+      break;
 
-//     case "down":
-//       affectedTile.push(_champTile[0] + 1);
-//       affectedTile.push(_champTile[1]);
-//       break;
+    case "down":
+      affectedTile[0] += 1;
+      break;
 
-//     case "left":
-//       affectedTile.push(_champTile[0]);
-//       affectedTile.push(_champTile[1] - 1);
-//       break;
+    case "left":
+      affectedTile[1] -= 1;
+      break;
 
-//     case "right":
-//       affectedTile.push(_champTile[0]);
-//       affectedTile.push(_champTile[1] + 1);
-//       break;
+    case "right":
+      affectedTile[1] += 1;
+      break;
 
-//     default:
-//       break;
-//   }
+    default:
+      break;
+  }
 
-//   var canAttack = MapStore.attackTile(affectedTile);
+  var canAttack = LevelStore.attackTile(affectedTile);
 
-//   var attackPosition = getAttackPosition();
+  var attackPosition = getAttackPosition();
 
-//   $('.champ-block').after("<img class='fire-ball' src='../img/fire_ball.png' height='20' width='20'>");
+  $('.champ-block').after("<img class='fire-ball' src='../img/fire_ball.png' height='20' width='20'>");
 
-//   $('.fire-ball').css({top: (attackPosition[0] + 5), left: (attackPosition[1] + 5)});
+  $('.fire-ball').css({top: (attackPosition[0] + 5), left: (attackPosition[1] + 5)});
 
-//   setTimeout(function() {
-//     $('.fire-ball').remove();
-//   }, 750);
+  setTimeout(function() {
+    $('.fire-ball').remove();
+  }, 750);
 
-//   if (MapStore.getTileObject(affectedTile) == 2) {
-//     CreepStore.takeDamage("two", 1);
-//   }
+  if(canAttack) {
+    CreepStore.settleDamage(LevelStore.getTileObject(affectedTile), 1);
+  }
+}
 
-//   if (MapStore.getTileObject(affectedTile) == 3) {
-//     console.log('champ will attack three')
-//     CreepStore.takeDamage("three", 1);
-//   }
+function getAttackPosition() {
+  var attackPosition = [
+    $('.champ-block').position().top,
+    $('.champ-block').position().left
+  ];
 
-// }
+  switch(_champs[0].champ.faceDirection) {
+    case "up":
+      attackPosition[0] -= _tileWidth;
+      break;
 
-// function getAttackPosition() {
-//   var attackPosition = ce.clone(_champPosition);
+    case "down":
+      attackPosition[0] += _tileWidth;
+      break;
 
-//   switch(_champFaceDirection) {
-//     case "up":
-//       attackPosition[0] -= _tileWidth;
-//       break;
+    case "left":
+      attackPosition[1] -= _tileWidth;
+      break;
 
-//     case "down":
-//       attackPosition[0] += _tileWidth;
-//       break;
+    case "right":
+      attackPosition[1] += _tileWidth;
+      break;
 
-//     case "left":
-//       attackPosition[1] -= _tileWidth;
-//       break;
+    default:
+      break;
+  }
 
-//     case "right":
-//       attackPosition[1] += _tileWidth;
-//       break;
-
-//     default:
-//       break;
-//   }
-
-//   return attackPosition;
-// }
+  return attackPosition;
+}
 
 function handleKeyPress(keyCode) {
 
@@ -274,7 +267,7 @@ function handleKeyPress(keyCode) {
         keyCode == 100) {
       moveChamp(keyCode);
     } else if (keyCode == 106) {
-      //champAttack();
+      champAttack();
     }
 
     //set key press cool down to 1 second

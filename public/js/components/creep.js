@@ -25,6 +25,8 @@ var Creep = React.createClass({
   },
 
   render: function() {
+    
+    var creepClass = "creep-block " + this.props.objectName;
 
     var creepStyle = {
       top: (this.state.creep.tile[0] * 50) + 59,
@@ -33,7 +35,7 @@ var Creep = React.createClass({
     };
 
     return (
-      <div className="creep-block " style={creepStyle}>
+      <div className={creepClass} style={creepStyle}>
         <img className="creep-spirit" id="creep-down-0" />
         <div className="creep-HP">{this.state.creep.hp}</div>
       </div>

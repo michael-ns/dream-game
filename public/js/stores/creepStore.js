@@ -20,6 +20,7 @@ function initiateCreep(creepObject) {
 }
 
 function getCreep(objectName) {
+
   for (var i = 0; i < _creeps.length; i++) {
 
     if(Object.keys(_creeps[i]).toString() == objectName) {
@@ -72,35 +73,43 @@ function startCreepAnimationLoop() {
   }, 250);
 }
 
-// function kill(creepName) {
+function kill(creepName) {
 
-//   if(creepName == "two") {
-//     setTimeout(function() {
-//       $('.creep-block-one').remove();
-//     }, 750);
-//   }
+  setTimeout(function() {
+    $('.creep-block.' + creepName).remove();
+  }, 750);
 
-//   if(creepName == "three") {
-//     setTimeout(function() {
-//       $('.creep-block-two').remove();
-//     }, 750);
-//   }
+  for (var i = 0; i < _creeps.length; i++) {
 
-// }
+    if(Object.keys(_creeps[i]).toString() == creepName) {
 
-// function takeDamage(creepName, damage) {
+      LevelStore.setTile(_creeps[i][creepName].tile, 0);
 
-//   _creepHPs[creepName] -= damage;
+      CreepStore.emitChange();
+      break;
+    }
 
-//   console.log(creepName, damage)
+  }
 
-//   if(_creepHPs[creepName] <= 0) {
-//     kill(creepName);
-//     MapStore.setTile(_creepTiles[creepName], 0);
-//   }
+}
 
-//   CreepStore.emitChange();
-// }
+function settleDamage(creepName, damage) {
+
+  for (var i = 0; i < _creeps.length; i++) {
+
+    if(Object.keys(_creeps[i]).toString() == creepName) {
+
+      _creeps[i][creepName].hp -= damage;
+
+      if(_creeps[i][creepName].hp <= 0) kill(creepName);
+
+      CreepStore.emitChange();
+      break;
+    }
+
+  }
+
+}
 
 var CreepStore = assign({}, EventEmitter.prototype, {
 
@@ -111,6 +120,8 @@ var CreepStore = assign({}, EventEmitter.prototype, {
   startCreepAnimationLoop: startCreepAnimationLoop,
 
   getTilePosition: getTilePosition,
+
+  settleDamage: settleDamage,
 
   // getCreepPositions: function() {
   //   loadCreepTile();
