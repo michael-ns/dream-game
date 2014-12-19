@@ -24,7 +24,7 @@ var Champ = React.createClass({
 
     var champStyle = {
       top: (this.state.champ.tile[0] * 50) + 59,
-      left: (this.state.champ.tile[1] * 50) + 310,
+      left: (this.state.champ.tile[1] * 50) + 320,
       position: 'fixed'
     };
 

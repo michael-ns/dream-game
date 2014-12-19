@@ -33489,7 +33489,7 @@ var Champ = React.createClass({displayName: 'Champ',
 
     var champStyle = {
       top: (this.state.champ.tile[0] * 50) + 59,
-      left: (this.state.champ.tile[1] * 50) + 310,
+      left: (this.state.champ.tile[1] * 50) + 320,
       position: 'fixed'
     };
 
@@ -33541,7 +33541,7 @@ var Creep = React.createClass({displayName: 'Creep',
 
     var creepStyle = {
       top: (this.state.creep.tile[0] * 50) + 59,
-      left: (this.state.creep.tile[1] * 50) + 310,
+      left: (this.state.creep.tile[1] * 50) + 320,
       position: 'fixed'
     };
 

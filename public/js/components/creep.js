@@ -30,7 +30,7 @@ var Creep = React.createClass({
 
     var creepStyle = {
       top: (this.state.creep.tile[0] * 50) + 59,
-      left: (this.state.creep.tile[1] * 50) + 310,
+      left: (this.state.creep.tile[1] * 50) + 320,
       position: 'fixed'
     };
 
