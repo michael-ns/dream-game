@@ -33461,6 +33461,11 @@ var GameDispatcher = require('../dispatcher');
 var GameConstants = require('../constants');
 
 module.exports = {
+  endTurn: function() {
+    GameDispatcher.handleViewAction({
+      actionType: GameConstants.END_TURN
+    });
+  }
 };
 },{"../constants":213,"../dispatcher":214}],208:[function(require,module,exports){
 var React = require('react');
@@ -33564,6 +33569,7 @@ module.exports = Creep;
 var React = require('react');
 
 var DashboardStore = require('../stores/dashboardStore');
+var LevelAcionCreators = require('../actions/levelActionCreators');
 
 function getStateFromStore() {
   return {
@@ -33580,14 +33586,26 @@ var Dashboard = React.createClass({displayName: 'Dashboard',
     DashboardStore.addChangeListener(this.onChange);
   },
 
+  handleOnClick: function(e) {
+    LevelAcionCreators.endTurn();
+  },
+
   render: function() {
 
-    console.log(this.state.panelData)
+    var turnIndicator = "";
+
+    if(this.state.panelData.turn) {
+      turnIndicator = "My Turn";
+    } else {
+      turnIndicator = "NOT My Turn";
+    }
 
     return (
       React.createElement("div", {className: "dashboard"}, 
         React.createElement("p", null, "Massage: ", this.state.panelData.msg), 
-        React.createElement("p", null, "Champ Stamina: ", this.state.panelData.stamina[0], " / ", this.state.panelData.stamina[1])
+        React.createElement("p", null, "Champ Stamina: ", this.state.panelData.stamina[0], " / ", this.state.panelData.stamina[1]), 
+        React.createElement("p", null, "Turn: ", turnIndicator), 
+        React.createElement("button", {onClick: this.handleOnClick}, "End Turn")
       )
     );
   },
@@ -33599,7 +33617,7 @@ var Dashboard = React.createClass({displayName: 'Dashboard',
 });
 
 module.exports = Dashboard;
-},{"../stores/dashboardStore":217,"react":204}],211:[function(require,module,exports){
+},{"../actions/levelActionCreators":207,"../stores/dashboardStore":217,"react":204}],211:[function(require,module,exports){
 var React = require('react');
 var $ = require('jquery');
 
@@ -33819,7 +33837,8 @@ module.exports = keyMirror({
   ONCLICK_START_GAME: null,
   UPDATE_MAP:null,
   ON_KEY_PRESS: null,
-  HANDLE_KEY_PRESS: null
+  HANDLE_KEY_PRESS: null,
+  END_TURN: null
 });
 
 },{"keymirror":13}],214:[function(require,module,exports){
@@ -34056,6 +34075,8 @@ function moveChamp(keyCode) {
       _currentStamina -= 1;
       updateDashboardStamina();
     }, 1000);
+
+    DashboardStore.setMsg("Champ Moved " + faceDirection);
   }
 }
 
@@ -34100,6 +34121,8 @@ function champAttack() {
     CreepStore.settleDamage(LevelStore.getTileObject(affectedTile), 1);
     _currentStamina -= 2;
     updateDashboardStamina();
+
+    DashboardStore.setMsg("Champ attacked");
   }
 }
 
@@ -34398,13 +34421,16 @@ var assign = require('object-assign');
 var $ = require('jquery');
 var CHANGE_EVENT = 'change';
 
+var LevelStore = require('./levelStore');
+
 var _msg = "BOOM";
 var _stamina = [10, 10];
 
 function getData() {
   return {
     msg: _msg,
-    stamina: _stamina
+    stamina: _stamina,
+    turn: LevelStore.getTurn()
   }
 }
 
@@ -34466,7 +34492,7 @@ GameDispatcher.register(function(payload) {
 
 module.exports = DashboardStore;
 
-},{"../constants":213,"../dispatcher":214,"events":6,"jquery":12,"object-assign":14}],218:[function(require,module,exports){
+},{"../constants":213,"../dispatcher":214,"./levelStore":218,"events":6,"jquery":12,"object-assign":14}],218:[function(require,module,exports){
 var GameDispatcher = require('../dispatcher');
 var ce = require('cloneextend');
 var EventEmitter = require('events').EventEmitter;
@@ -34478,6 +34504,7 @@ var CHANGE_EVENT = 'change';
 var _level = require('../../map/level-1.json');
 var _map = null;
 var _levelObjects = null;
+var _turnIndicator = true;
 
 function setLevel(level) {
 
@@ -34525,6 +34552,14 @@ function setLevel(level) {
     }
 
   }
+}
+
+function endTurn() {
+  _turnIndicator = false;
+
+  var DashboardStore = require('./dashboardStore');
+
+  DashboardStore.emitChange();
 }
 
 function moveTile(currentTile, intendedTile, objectToMove) {
@@ -34586,6 +34621,10 @@ var LevelStore = assign({}, EventEmitter.prototype, {
 
   setLevel: setLevel,
 
+  getTurn: function() {
+    return _turnIndicator;
+  },
+
   getLevelObjects: function() {
     return _levelObjects;
   },
@@ -34636,32 +34675,25 @@ var LevelStore = assign({}, EventEmitter.prototype, {
 
 // Register to handle all updates
 GameDispatcher.register(function(payload) {
-  // var action = payload.action;
+  var action = payload.action;
   
-  // switch(action.actionType) {
-  //   case GameConstants.UPDATE_MAP:
-  //     location = action.location;
-  //     value = action.value;
-  //     updateMap(location, value);
-  //     break;
+  switch(action.actionType) {
+    case GameConstants.END_TURN:
+      endTurn();
+      break;
 
-  //   case GameConstants.CHAMP_COLLISION_HANDLER:
-  //     champPosition = action.champPosition;
-  //     champCollisionHandler(champPosition);
-  //     break;
+    default:
+      return true;
+  }
 
-  //   default:
-  //     return true;
-  // }
+  LevelStore.emitChange();
 
-  // LevelStore.emitChange();
-
-  // return true;
+  return true;
 });
 
 module.exports = LevelStore;
 
-},{"../../map/level-1.json":219,"../../map/level-2.json":220,"../../map/level-3.json":221,"../constants":213,"../dispatcher":214,"./champStore":215,"./creepStore":216,"cloneextend":8,"events":6,"jquery":12,"object-assign":14}],219:[function(require,module,exports){
+},{"../../map/level-1.json":219,"../../map/level-2.json":220,"../../map/level-3.json":221,"../constants":213,"../dispatcher":214,"./champStore":215,"./creepStore":216,"./dashboardStore":217,"cloneextend":8,"events":6,"jquery":12,"object-assign":14}],219:[function(require,module,exports){
 module.exports={
   "tiles": [
     [0, "champ", 0, 0, 0, 0, 0, 0],

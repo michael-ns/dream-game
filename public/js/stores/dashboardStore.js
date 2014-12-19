@@ -5,13 +5,16 @@ var assign = require('object-assign');
 var $ = require('jquery');
 var CHANGE_EVENT = 'change';
 
+var LevelStore = require('./levelStore');
+
 var _msg = "BOOM";
 var _stamina = [10, 10];
 
 function getData() {
   return {
     msg: _msg,
-    stamina: _stamina
+    stamina: _stamina,
+    turn: LevelStore.getTurn()
   }
 }
 

@@ -204,6 +204,8 @@ function moveChamp(keyCode) {
       _currentStamina -= 1;
       updateDashboardStamina();
     }, 1000);
+
+    DashboardStore.setMsg("Champ Moved " + faceDirection);
   }
 }
 
@@ -248,6 +250,8 @@ function champAttack() {
     CreepStore.settleDamage(LevelStore.getTileObject(affectedTile), 1);
     _currentStamina -= 2;
     updateDashboardStamina();
+
+    DashboardStore.setMsg("Champ attacked");
   }
 }
 

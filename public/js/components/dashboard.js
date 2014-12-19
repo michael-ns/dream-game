@@ -1,6 +1,7 @@
 var React = require('react');
 
 var DashboardStore = require('../stores/dashboardStore');
+var LevelAcionCreators = require('../actions/levelActionCreators');
 
 function getStateFromStore() {
   return {
@@ -17,14 +18,26 @@ var Dashboard = React.createClass({
     DashboardStore.addChangeListener(this.onChange);
   },
 
+  handleOnClick: function(e) {
+    LevelAcionCreators.endTurn();
+  },
+
   render: function() {
 
-    console.log(this.state.panelData)
+    var turnIndicator = "";
+
+    if(this.state.panelData.turn) {
+      turnIndicator = "My Turn";
+    } else {
+      turnIndicator = "NOT My Turn";
+    }
 
     return (
       <div className="dashboard">
         <p>Massage: {this.state.panelData.msg}</p>
         <p>Champ Stamina: {this.state.panelData.stamina[0]} / {this.state.panelData.stamina[1]}</p>
+        <p>Turn: {turnIndicator}</p>
+        <button onClick={this.handleOnClick}>End Turn</button>
       </div>
     );
   },

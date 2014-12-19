@@ -9,6 +9,7 @@ var CHANGE_EVENT = 'change';
 var _level = require('../../map/level-1.json');
 var _map = null;
 var _levelObjects = null;
+var _turnIndicator = true;
 
 function setLevel(level) {
 
@@ -56,6 +57,14 @@ function setLevel(level) {
     }
 
   }
+}
+
+function endTurn() {
+  _turnIndicator = false;
+
+  var DashboardStore = require('./dashboardStore');
+
+  DashboardStore.emitChange();
 }
 
 function moveTile(currentTile, intendedTile, objectToMove) {
@@ -117,6 +126,10 @@ var LevelStore = assign({}, EventEmitter.prototype, {
 
   setLevel: setLevel,
 
+  getTurn: function() {
+    return _turnIndicator;
+  },
+
   getLevelObjects: function() {
     return _levelObjects;
   },
@@ -167,27 +180,20 @@ var LevelStore = assign({}, EventEmitter.prototype, {
 
 // Register to handle all updates
 GameDispatcher.register(function(payload) {
-  // var action = payload.action;
+  var action = payload.action;
   
-  // switch(action.actionType) {
-  //   case GameConstants.UPDATE_MAP:
-  //     location = action.location;
-  //     value = action.value;
-  //     updateMap(location, value);
-  //     break;
+  switch(action.actionType) {
+    case GameConstants.END_TURN:
+      endTurn();
+      break;
 
-  //   case GameConstants.CHAMP_COLLISION_HANDLER:
-  //     champPosition = action.champPosition;
-  //     champCollisionHandler(champPosition);
-  //     break;
+    default:
+      return true;
+  }
 
-  //   default:
-  //     return true;
-  // }
+  LevelStore.emitChange();
 
-  // LevelStore.emitChange();
-
-  // return true;
+  return true;
 });
 
 module.exports = LevelStore;
