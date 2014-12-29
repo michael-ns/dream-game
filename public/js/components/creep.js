@@ -17,7 +17,7 @@ var Creep = React.createClass({
 
   componentDidMount: function() {
     CreepStore.addChangeListener(this.onChange);
-    CreepStore.startCreepAnimationLoop();
+    CreepStore.startCreepAnimationLoop(this.props.objectName);
   },
 
   componentWillUnmount: function() {
@@ -34,9 +34,11 @@ var Creep = React.createClass({
       position: 'fixed'
     };
 
+    var creepFaceDirection = "creep-" + this.state.creep.faceDirection + "-0";
+
     return (
       <div className={creepClass} style={creepStyle}>
-        <img className="creep-spirit" id="creep-down-0" />
+        <img className="creep-spirit" id={creepFaceDirection} />
         <div className="creep-HP">{this.state.creep.hp}</div>
       </div>
     );

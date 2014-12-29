@@ -33533,7 +33533,7 @@ var Creep = React.createClass({displayName: 'Creep',
 
   componentDidMount: function() {
     CreepStore.addChangeListener(this.onChange);
-    CreepStore.startCreepAnimationLoop();
+    CreepStore.startCreepAnimationLoop(this.props.objectName);
   },
 
   componentWillUnmount: function() {
@@ -33550,9 +33550,11 @@ var Creep = React.createClass({displayName: 'Creep',
       position: 'fixed'
     };
 
+    var creepFaceDirection = "creep-" + this.state.creep.faceDirection + "-0";
+
     return (
       React.createElement("div", {className: creepClass, style: creepStyle}, 
-        React.createElement("img", {className: "creep-spirit", id: "creep-down-0"}), 
+        React.createElement("img", {className: "creep-spirit", id: creepFaceDirection}), 
         React.createElement("div", {className: "creep-HP"}, this.state.creep.hp)
       )
     );
@@ -33889,6 +33891,8 @@ var _canHandleNextKeyPress = true;
 var _moveVector = [0, 0];
 var _maxStamina = null;
 var _currentStamina = null;
+var _maxHP = null;
+var _currentHP = null;
 
 function initiateChamp(champObject) {
   _champs.push(champObject);
@@ -33897,8 +33901,31 @@ function initiateChamp(champObject) {
   _maxStamina = champObject.champ.stamina;
   _currentStamina = _maxStamina;
 
+  //set champ HP
+  _maxHP = champObject.champ.hp;
+  _currentHP = _maxHP;
+
   //push stamina data to the dashboard
   updateDashboardStamina();
+}
+
+function settleDamage(damage) {
+
+  var champPosTop = (_champs[0].champ.tile[0] * 50) + 59;
+  var champPosLeft = (_champs[0].champ.tile[1] * 50) + 320;
+
+  $('.champ-block').after("<img class='fire-ball' src='../img/fire_ball.png' height='20' width='20'>");
+
+  $('.fire-ball').css({top: (champPosTop + 5), left: (champPosLeft + 5)});
+
+  setTimeout(function() {
+    $('.fire-ball').remove();
+  }, 750);
+
+  _currentHP -= 1;
+  _champs[0].champ.hp = _currentHP;
+
+  ChampStore.emitChange();
 }
 
 function newTurn() {
@@ -34197,6 +34224,8 @@ var ChampStore = assign({}, EventEmitter.prototype, {
 
   getTilePosition: getTilePosition,
 
+  settleDamage: settleDamage,
+
   getTile: function() {
     return _champs[0].champ.tile;
   },
@@ -34266,6 +34295,7 @@ var _creeps = [];
 
 var _tileWidth = 50;
 var _charWidth = 32;
+
 var _animationCounter = 0;
 
 function turnOnAI() {
@@ -34284,8 +34314,32 @@ function singleCreepAI(creep) {
   var verticalDistance = champTile[0] - creep.tile[0];
   var horizontalDistance = champTile[1] - creep.tile[1];
 
-  
+  var champDirection = "not around";
 
+  if(verticalDistance == 0) {
+    if(horizontalDistance == 1) {
+      champDirection = "right";
+    } else if (horizontalDistance == -1) {
+      champDirection = "left";
+    }
+  }
+
+  if(horizontalDistance == 0) {
+    if(verticalDistance == 1) {
+      champDirection = "down";
+    } else if (verticalDistance == -1) {
+      champDirection = "up";
+    }
+  }
+
+  if(champDirection != "not around") {
+    creep.faceDirection = champDirection;
+
+    var ChampStore = require('../stores/champStore');
+    ChampStore.settleDamage(1);
+
+    CreepStore.emitChange();
+  }
 }
 
 function initiateCreep(creepObject) {
@@ -34311,16 +34365,6 @@ function getTilePosition() {
     _creeps[i][Object.keys(_creeps[i])].position = [objectPosition.top, objectPosition.left];
     
   }
-}
-
-function startCreepAnimationLoop() {
-  setInterval(function () {
-    if (_animationCounter == 3) _animationCounter = 0;
-
-    $('.creep-spirit').attr("id", "creep-down-" + _animationCounter.toString());
-
-    _animationCounter += 1;
-  }, 250);
 }
 
 function kill(creepName) {
@@ -34361,15 +34405,26 @@ function settleDamage(creepName, damage) {
 
 }
 
+function startCreepAnimationLoop(creepName) {
+  setInterval(function () {
+
+    if (_animationCounter == 3) _animationCounter = 0;
+
+    $('.' + creepName + ' > img').attr("id", "creep-" + getCreep(creepName).faceDirection + "-" + _animationCounter.toString());
+
+    _animationCounter += 1;
+  }, 250);
+}
+
 var CreepStore = assign({}, EventEmitter.prototype, {
 
   initiateCreep: initiateCreep,
 
   getCreep: getCreep,
 
-  startCreepAnimationLoop: startCreepAnimationLoop,
-
   getTilePosition: getTilePosition,
+
+  startCreepAnimationLoop: startCreepAnimationLoop,
 
   settleDamage: settleDamage,
 

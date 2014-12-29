@@ -18,6 +18,8 @@ var _canHandleNextKeyPress = true;
 var _moveVector = [0, 0];
 var _maxStamina = null;
 var _currentStamina = null;
+var _maxHP = null;
+var _currentHP = null;
 
 function initiateChamp(champObject) {
   _champs.push(champObject);
@@ -26,8 +28,31 @@ function initiateChamp(champObject) {
   _maxStamina = champObject.champ.stamina;
   _currentStamina = _maxStamina;
 
+  //set champ HP
+  _maxHP = champObject.champ.hp;
+  _currentHP = _maxHP;
+
   //push stamina data to the dashboard
   updateDashboardStamina();
+}
+
+function settleDamage(damage) {
+
+  var champPosTop = (_champs[0].champ.tile[0] * 50) + 59;
+  var champPosLeft = (_champs[0].champ.tile[1] * 50) + 320;
+
+  $('.champ-block').after("<img class='fire-ball' src='../img/fire_ball.png' height='20' width='20'>");
+
+  $('.fire-ball').css({top: (champPosTop + 5), left: (champPosLeft + 5)});
+
+  setTimeout(function() {
+    $('.fire-ball').remove();
+  }, 750);
+
+  _currentHP -= 1;
+  _champs[0].champ.hp = _currentHP;
+
+  ChampStore.emitChange();
 }
 
 function newTurn() {
@@ -325,6 +350,8 @@ var ChampStore = assign({}, EventEmitter.prototype, {
   newTurn: newTurn,
 
   getTilePosition: getTilePosition,
+
+  settleDamage: settleDamage,
 
   getTile: function() {
     return _champs[0].champ.tile;

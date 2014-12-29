@@ -12,6 +12,7 @@ var _creeps = [];
 
 var _tileWidth = 50;
 var _charWidth = 32;
+
 var _animationCounter = 0;
 
 function turnOnAI() {
@@ -30,8 +31,32 @@ function singleCreepAI(creep) {
   var verticalDistance = champTile[0] - creep.tile[0];
   var horizontalDistance = champTile[1] - creep.tile[1];
 
-  
+  var champDirection = "not around";
 
+  if(verticalDistance == 0) {
+    if(horizontalDistance == 1) {
+      champDirection = "right";
+    } else if (horizontalDistance == -1) {
+      champDirection = "left";
+    }
+  }
+
+  if(horizontalDistance == 0) {
+    if(verticalDistance == 1) {
+      champDirection = "down";
+    } else if (verticalDistance == -1) {
+      champDirection = "up";
+    }
+  }
+
+  if(champDirection != "not around") {
+    creep.faceDirection = champDirection;
+
+    var ChampStore = require('../stores/champStore');
+    ChampStore.settleDamage(1);
+
+    CreepStore.emitChange();
+  }
 }
 
 function initiateCreep(creepObject) {
@@ -57,16 +82,6 @@ function getTilePosition() {
     _creeps[i][Object.keys(_creeps[i])].position = [objectPosition.top, objectPosition.left];
     
   }
-}
-
-function startCreepAnimationLoop() {
-  setInterval(function () {
-    if (_animationCounter == 3) _animationCounter = 0;
-
-    $('.creep-spirit').attr("id", "creep-down-" + _animationCounter.toString());
-
-    _animationCounter += 1;
-  }, 250);
 }
 
 function kill(creepName) {
@@ -107,15 +122,26 @@ function settleDamage(creepName, damage) {
 
 }
 
+function startCreepAnimationLoop(creepName) {
+  setInterval(function () {
+
+    if (_animationCounter == 3) _animationCounter = 0;
+
+    $('.' + creepName + ' > img').attr("id", "creep-" + getCreep(creepName).faceDirection + "-" + _animationCounter.toString());
+
+    _animationCounter += 1;
+  }, 250);
+}
+
 var CreepStore = assign({}, EventEmitter.prototype, {
 
   initiateCreep: initiateCreep,
 
   getCreep: getCreep,
 
-  startCreepAnimationLoop: startCreepAnimationLoop,
-
   getTilePosition: getTilePosition,
+
+  startCreepAnimationLoop: startCreepAnimationLoop,
 
   settleDamage: settleDamage,
 

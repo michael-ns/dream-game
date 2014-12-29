@@ -146,6 +146,78 @@ img {
   border: 0;
 }
 
+#creep-up-0 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -96px -96px;
+  border: 0;
+}
+
+#creep-up-1 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -128px -96px;
+  border: 0;
+}
+
+#creep-up-2 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -160px -96px;
+  border: 0;
+}
+
+#creep-left-0 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -96px -32px;
+  border: 0;
+}
+
+#creep-left-1 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -128px -32px;
+  border: 0;
+}
+
+#creep-left-2 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -160px -32px;
+  border: 0;
+}
+
+#creep-right-0 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -96px -64px;
+  border: 0;
+}
+
+#creep-right-1 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -128px -64px;
+  border: 0;
+}
+
+#creep-right-2 {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  background: url(../img/char-tiles.png) -160px -64px;
+  border: 0;
+}
+
 .champ-HP {
   color: red;
   z-index: 999;
