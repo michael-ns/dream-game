@@ -30,6 +30,14 @@ function initiateChamp(champObject) {
   updateDashboardStamina();
 }
 
+function newTurn() {
+  _currentStamina = _maxStamina;
+
+  updateDashboardStamina();
+
+  ChampStore.emitChange();
+}
+
 function updateDashboardStamina() {
   DashboardStore.setChampStamina(_currentStamina, _maxStamina);
 }
@@ -314,7 +322,13 @@ var ChampStore = assign({}, EventEmitter.prototype, {
 
   getChamp: getChamp,
 
+  newTurn: newTurn,
+
   getTilePosition: getTilePosition,
+
+  getTile: function() {
+    return _champs[0].champ.tile;
+  },
 
   // getChampPosition: function() {
   //   loadChampTile();

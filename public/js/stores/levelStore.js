@@ -59,12 +59,28 @@ function setLevel(level) {
   }
 }
 
+function nextTurn() {
+  _turnIndicator = true;
+
+  var ChampStore = require('./champStore');
+
+  ChampStore.newTurn();
+
+  var DashboardStore = require('./dashboardStore');
+
+  DashboardStore.emitChange();
+}
+
 function endTurn() {
   _turnIndicator = false;
 
   var DashboardStore = require('./dashboardStore');
 
   DashboardStore.emitChange();
+
+  var CreepStore = require('./creepStore');
+
+  CreepStore.turnOnAI();
 }
 
 function moveTile(currentTile, intendedTile, objectToMove) {
@@ -141,6 +157,8 @@ var LevelStore = assign({}, EventEmitter.prototype, {
   },
 
   moveTile: moveTile,
+
+  nextTurn: nextTurn,
 
   // getChampInitialTile: function() {
   //   return _mapTiles.champLocation;

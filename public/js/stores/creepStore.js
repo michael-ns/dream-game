@@ -14,6 +14,25 @@ var _tileWidth = 50;
 var _charWidth = 32;
 var _animationCounter = 0;
 
+function turnOnAI() {
+  for (var i = 0; i < _creeps.length; i++) {
+    singleCreepAI(_creeps[i][Object.keys(_creeps[i]).toString()]);
+  }
+
+  LevelStore.nextTurn();
+}
+
+function singleCreepAI(creep) {
+  //if the champ is around, turn to the champ and attack
+  var ChampStore = require('../stores/champStore');
+  var champTile = ChampStore.getTile();
+
+  var verticalDistance = champTile[0] - creep.tile[0];
+  var horizontalDistance = champTile[1] - creep.tile[1];
+
+  
+
+}
 
 function initiateCreep(creepObject) {
   _creeps.push(creepObject);
@@ -39,29 +58,6 @@ function getTilePosition() {
     
   }
 }
-
-// function loadCreepTile() {
-//   if(_creepTiles === null) _creepTiles = MapStore.getCreepInitialTiles();
-// }
-
-// function loadCreepPositions() {
-//   _creepPositions.two = [];
-
-//   _creepPositions.two[0] = $('.creep.two').position().top;
-//   _creepPositions.two[0] += (_tileWidth - _charWidth) * 0.5;
-
-//   _creepPositions.two[1] = $('.creep.two').position().left;
-//   _creepPositions.two[1] += (_tileWidth - _charWidth) * 0.5;
-
-//   _creepPositions.three = [];
-
-//   _creepPositions.three[0] = $('.creep.three').position().top;
-//   _creepPositions.three[0] += (_tileWidth - _charWidth) * 0.5;
-
-//   _creepPositions.three[1] = $('.creep.three').position().left;
-//   _creepPositions.three[1] += (_tileWidth - _charWidth) * 0.5;
-
-// }
 
 function startCreepAnimationLoop() {
   setInterval(function () {
@@ -123,18 +119,7 @@ var CreepStore = assign({}, EventEmitter.prototype, {
 
   settleDamage: settleDamage,
 
-  // getCreepPositions: function() {
-  //   loadCreepTile();
-  //   loadCreepPositions();
-
-  //   return _creepPositions;
-  // },
-
-  // getCreepHPs: function() {
-  //   return _creepHPs;
-  // },
-
-  // takeDamage: takeDamage,
+  turnOnAI: turnOnAI,
 
   //not specific to this game
   emitChange: function() {

@@ -29,7 +29,7 @@ var Dashboard = React.createClass({
     if(this.state.panelData.turn) {
       turnIndicator = "My Turn";
     } else {
-      turnIndicator = "NOT My Turn";
+      turnIndicator = "AI's Turn";
     }
 
     return (
