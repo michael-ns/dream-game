@@ -96,6 +96,8 @@ function kill(creepName) {
 
       LevelStore.setTile(_creeps[i][creepName].tile, 0);
 
+      _creeps.splice(i, 1);
+
       CreepStore.emitChange();
       break;
     }

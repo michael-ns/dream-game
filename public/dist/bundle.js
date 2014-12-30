@@ -33911,6 +33911,8 @@ function initiateChamp(champObject) {
 
 function settleDamage(damage) {
 
+  console.log("champ take damage")
+
   var champPosTop = (_champs[0].champ.tile[0] * 50) + 59;
   var champPosLeft = (_champs[0].champ.tile[1] * 50) + 320;
 
