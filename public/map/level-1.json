@@ -12,6 +12,7 @@
   "levelObjects": [
     {
         "champ": {
+            "objName": "champ",
             "tile": [0, 1],
             "faceDirection": "down",
             "hp": 5,
@@ -20,16 +21,22 @@
     },
     {
         "creepA": {
+            "objName": "creepA",
             "tile": [1, 3],
             "faceDirection": "down",
-            "hp": 3
+            "hp": 3,
+            "stamina": 2,
+            "vision": 3
         }
     },
     {
         "creepB": {
+            "objName": "creepB",
             "tile": [4, 3],
             "faceDirection": "down",
-            "hp": 4
+            "hp": 4,
+            "stamina": 2,
+            "vision": 3
         }
     }
   ]

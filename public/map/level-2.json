@@ -1,17 +1,34 @@
 {
   "tiles": [
-    [0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 2, 0, 0, 0, 0],
+    [0, "champ", 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, "creepA", 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 3, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0]
   ],
-  "champLocation": [0, 1],
-  "creepLocations": {
-    "two": [1, 3],
-    "three": [4, 3]
-  }
+  "levelObjects": [
+    {
+        "champ": {
+            "objName": "champ",
+            "tile": [0, 1],
+            "faceDirection": "down",
+            "hp": 5,
+            "stamina": 5
+        }
+    },
+    {
+        "creepA": {
+            "objName": "creepA",
+            "tile": [1, 3],
+            "faceDirection": "down",
+            "hp": 3,
+            "stamina": 2,
+            "vision": 3
+        }
+    }
+  ]
 }
+

@@ -33911,8 +33911,6 @@ function initiateChamp(champObject) {
 
 function settleDamage(damage) {
 
-  console.log("champ take damage")
-
   var champPosTop = (_champs[0].champ.tile[0] * 50) + 59;
   var champPosLeft = (_champs[0].champ.tile[1] * 50) + 320;
 
@@ -34305,18 +34303,135 @@ function turnOnAI() {
     singleCreepAI(_creeps[i][Object.keys(_creeps[i]).toString()]);
   }
 
+  for (var i = 0; i < _creeps.length; i++) {
+    _creeps[i][Object.keys(_creeps[i]).toString()].stamina = 2;
+  }
+
   LevelStore.nextTurn();
 }
 
 function singleCreepAI(creep) {
-  //if the champ is around, turn to the champ and attack
+
+  while(creep.stamina > 0) {
+    singleCreepActionAI(creep);
+  }
+
+}
+
+function singleCreepActionAI(creep) {
+  if(canCreepSeeChamp(creep)) {
+    //attack champ when champ is around and there is enough stamina
+    if(isChampAround(creep) && creep.stamina >= 2) {
+      console.log("before attack")
+      singleCreepAttackChamp(creep);
+    } else {
+      //if champ is not around, chase champ
+      console.log("before creep move")
+      singleCreepChaseChamp(creep);
+    }
+
+
+  } else {
+    creep.stamina = 0;
+  }
+}
+
+function canCreepSeeChamp(creep) {
+  var canCreepSeeChamp = false;
   var ChampStore = require('../stores/champStore');
   var champTile = ChampStore.getTile();
 
   var verticalDistance = champTile[0] - creep.tile[0];
   var horizontalDistance = champTile[1] - creep.tile[1];
 
+  if(Math.abs(verticalDistance) <= creep.vision && Math.abs(horizontalDistance) <= creep.vision) {
+    canCreepSeeChamp = true;
+  }
+
+  return canCreepSeeChamp;
+}
+
+function creepTurn(creep, direction) {
+  creep.faceDirection = direction;
+
+  CreepStore.emitChange();
+}
+
+function creepMove(creep, direction) {
+
+  creepTurn(creep, direction);
+
+  var moveVector = [0, 0];
+
+  switch(direction) {
+    case "up":
+        moveVector[0] = -1;
+        break;
+    case "down":
+        moveVector[0] = 1;
+        break;
+    case "left":
+        moveVector[1] = -1;
+        break;
+    default:
+        moveVector[1] = 1;
+        break;
+  }
+
+  //actually move the creep
+  creep.tile[0] += moveVector[0];
+  creep.tile[1] += moveVector[1];
+
+  $('.creep-block.' +  creep.objName + '').animate({
+    top : "+=" + (moveVector[0] * _tileWidth).toString(),
+    left: "+=" + (moveVector[1] * _tileWidth).toString()
+  }, 1000);
+
+  console.log("creep tile: ", creep.tile[0], "-", creep.tile[1])
+
+  creep.stamina -= 1;
+
+  CreepStore.emitChange();
+}
+
+function singleCreepChaseChamp(creep) {
+  var ChampStore = require('../stores/champStore');
+  var champTile = ChampStore.getTile();
+
+  var verticalDistance = champTile[0] - creep.tile[0];
+  var horizontalDistance = champTile[1] - creep.tile[1];
+
+  if(verticalDistance < 0) {
+    creepMove(creep, "up");
+    return;
+  }
+
+  if(verticalDistance > 0) {
+    creepMove(creep, "down");
+    return;
+  }
+
+  if(horizontalDistance < 0) {
+    creepMove(creep, "left");
+    return;
+  }
+
+  if(horizontalDistance > 0) {
+    creepMove(creep, "right");
+    return;
+  }
+
+}
+
+function singleCreepAttackChamp(creep) {
+  //turn to the champ
   var champDirection = "not around";
+
+  var ChampStore = require('../stores/champStore');
+  var champTile = ChampStore.getTile();
+
+  var verticalDistance = champTile[0] - creep.tile[0];
+  var horizontalDistance = champTile[1] - creep.tile[1];
 
   if(verticalDistance == 0) {
     if(horizontalDistance == 1) {
@@ -34334,14 +34449,30 @@ function singleCreepAI(creep) {
     }
   }
 
-  if(champDirection != "not around") {
-    creep.faceDirection = champDirection;
+  creep.faceDirection = champDirection;
 
-    var ChampStore = require('../stores/champStore');
-    ChampStore.settleDamage(1);
+  CreepStore.emitChange();
 
-    CreepStore.emitChange();
+  var ChampStore = require('../stores/champStore');
+  ChampStore.settleDamage(1);
+
+  creep.stamina -= 2;
+}
+
+function isChampAround(creep) {
+  var isChampAround = false;
+  var ChampStore = require('../stores/champStore');
+  var champTile = ChampStore.getTile();
+
+  var verticalDistance = champTile[0] - creep.tile[0];
+  var horizontalDistance = champTile[1] - creep.tile[1];
+
+  if((verticalDistance == 0 && Math.abs(horizontalDistance) == 1) ||
+    (horizontalDistance == 0 && Math.abs(verticalDistance) == 1)) {
+    isChampAround = true;
   }
+
+  return isChampAround;
 }
 
 function initiateCreep(creepObject) {
@@ -34380,6 +34511,8 @@ function kill(creepName) {
     if(Object.keys(_creeps[i]).toString() == creepName) {
 
       LevelStore.setTile(_creeps[i][creepName].tile, 0);
+
+      _creeps.splice(i, 1);
 
       CreepStore.emitChange();
       break;
@@ -34782,6 +34915,7 @@ module.exports={
   "levelObjects": [
     {
         "champ": {
+            "objName": "champ",
             "tile": [0, 1],
             "faceDirection": "down",
             "hp": 5,
@@ -34790,16 +34924,22 @@ module.exports={
     },
     {
         "creepA": {
+            "objName": "creepA",
             "tile": [1, 3],
             "faceDirection": "down",
-            "hp": 3
+            "hp": 3,
+            "stamina": 2,
+            "vision": 3
         }
     },
     {
         "creepB": {
+            "objName": "creepB",
             "tile": [4, 3],
             "faceDirection": "down",
-            "hp": 4
+            "hp": 4,
+            "stamina": 2,
+            "vision": 3
         }
     }
   ]
@@ -34807,6 +34947,42 @@ module.exports={
 
 
 },{}],220:[function(require,module,exports){
+module.exports={
+  "tiles": [
+    [0, "champ", 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, "creepA", 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0]
+  ],
+  "levelObjects": [
+    {
+        "champ": {
+            "objName": "champ",
+            "tile": [0, 1],
+            "faceDirection": "down",
+            "hp": 5,
+            "stamina": 5
+        }
+    },
+    {
+        "creepA": {
+            "objName": "creepA",
+            "tile": [1, 3],
+            "faceDirection": "down",
+            "hp": 3,
+            "stamina": 2,
+            "vision": 3
+        }
+    }
+  ]
+}
+
+
+},{}],221:[function(require,module,exports){
 module.exports={
   "tiles": [
     [0, 1, 0, 0, 0, 0, 0, 0],
@@ -34824,9 +35000,7 @@ module.exports={
     "three": [4, 3]
   }
 }
-},{}],221:[function(require,module,exports){
-module.exports=require(220)
-},{"c:\\dream-game\\public\\map\\level-2.json":220}],222:[function(require,module,exports){
+},{}],222:[function(require,module,exports){
 module.exports={
   "levelList": [
     "level-1",
